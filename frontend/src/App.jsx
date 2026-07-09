@@ -1,23 +1,33 @@
 import { useEffect, useState } from 'react';
 import Header from './components/layout/Header';
 import Nav from './components/layout/Nav';
-import IsracardPage from './pages/IsracardPage';
-import FilePage from './pages/FilePage';
-import { usePageTransactions } from './hooks/usePageTransactions';
+import HomePage from './pages/HomePage';
+import LoadDataPage from './pages/LoadDataPage';
+import ChartsPage from './pages/ChartsPage';
+import TransactionsPage from './pages/TransactionsPage';
+import OverviewPage from './pages/OverviewPage';
+import { useTransactions } from './hooks/useTransactions';
 
 const PAGES = {
-  isracard: IsracardPage,
-  file: FilePage,
+  home: HomePage,
+  charts: ChartsPage,
+  transactions: TransactionsPage,
+  overview: OverviewPage,
+  'load-data': LoadDataPage,
 };
 
+// TODO: default back to 'home' once it's ready to be the landing page.
+const DEFAULT_PAGE = 'charts';
+
 function currentPage() {
-  const hash = window.location.hash.slice(1);
-  return hash in PAGES ? hash : 'isracard';
+  const path = window.location.pathname.slice(1);
+  return path in PAGES ? path : DEFAULT_PAGE;
 }
 
 export default function App() {
   const [page, setPage] = useState(currentPage);
-  const [transactions, setTransactions] = usePageTransactions(page);
+  const [transactions, setTransactions] = useTransactions();
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     const onPopState = () => setPage(currentPage());
@@ -26,8 +36,15 @@ export default function App() {
   }, []);
 
   function changePage(next) {
-    window.history.pushState(null, '', `#${next}`);
+    window.history.pushState(null, '', `/${next}`);
     setPage(next);
+    setSelectedCategory(null);
+  }
+
+  function handleSelectCategory(category) {
+    window.history.pushState(null, '', '/transactions');
+    setPage('transactions');
+    setSelectedCategory(category);
   }
 
   const Page = PAGES[page];
@@ -36,7 +53,13 @@ export default function App() {
     <>
       <Header />
       <Nav page={page} onChange={changePage} />
-      <Page transactions={transactions} onLoaded={setTransactions} />
+      <Page
+        transactions={transactions}
+        onLoaded={setTransactions}
+        selectedCategory={selectedCategory}
+        onSelectCategory={handleSelectCategory}
+        onClearCategory={() => setSelectedCategory(null)}
+      />
     </>
   );
 }

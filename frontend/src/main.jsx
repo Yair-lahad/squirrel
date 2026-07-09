@@ -6,13 +6,15 @@ import {
   LinearScale,
   BarElement,
   ArcElement,
+  PointElement,
+  LineElement,
   Legend,
   Tooltip,
 } from 'chart.js';
 import App from './App';
 import './styles.css';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Legend, Tooltip);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Legend, Tooltip);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

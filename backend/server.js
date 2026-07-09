@@ -31,6 +31,13 @@ app.get('/api/fetch/file', (req, res) => {
   res.json(fileSource.getTransactions());
 });
 
+// Client-side routing (no # in the URL) means the browser can request paths
+// like /charts directly (e.g. on refresh) that don't exist as files — fall
+// back to index.html so React Router-less client routing can handle them.
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Squirrel running at http://localhost:${PORT}`);

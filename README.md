@@ -1,19 +1,28 @@
+<img src="squirrel.png" alt="Squirrel mascot" width="140" />
+
 # Squirrel
 
 Understand the flow of your money — income and spending over time, by category.
 
-A single-page React app with two views (switched client-side, no page reload):
+A single-page React app with five nav destinations (switched client-side, no
+page reload):
 
 - **Fetch from Isracard** — pulls real transactions. Isracard has no public
   API, so this drives
   [`israeli-bank-scrapers`](https://github.com/eshaham/israeli-bank-scrapers),
   which logs into the Isracard website with your normal login details.
 - **Sample file** — loads a real (privacy-scrubbed) Isracard statement
-  bundled with the project, for exploring the dashboard without connecting an
+  bundled with the project, for exploring the app without connecting an
   account.
+- **Charts** — spend by category (bar or pie, amount or transaction count).
+  Click a category to jump to its transactions.
+- **Transactions** — the full sortable list, or a single category's history
+  as a date-vs-amount scatter when arriving via a chart click.
+- **Overview** — income / spend / net totals.
 
-Everything is local: fetched data lives only in the browser session (nothing
-is written to disk or a database).
+Whichever source you load from, all three topic pages read the same
+in-session dataset. Everything is local: fetched data lives only in the
+browser session (nothing is written to disk or a database).
 
 ## Run
 
@@ -40,6 +49,7 @@ developing.
 
 ```
 squirrel/
+├── squirrel.png        # mascot — also served as frontend/public/squirrel.png
 ├── data/              # JSON transaction fixtures
 ├── backend/           # HTTP layer + data fetching
 │   ├── server.js         # thin Express server; wires routes to sources/,
@@ -50,6 +60,7 @@ squirrel/
 │       │                       # translated to English for display
 │       └── mockSource.js       # synthetic mock data (data/sample-data.json)
 └── frontend/           # React + Vite single-page app
+    ├── public/squirrel.png  # favicon + header logo
     ├── index.html         # Vite entry (mounts <div id="root">)
     ├── vite.config.js
     └── src/
@@ -65,18 +76,17 @@ squirrel/
         │   ├── mock.js          # GET  /api/fetch/mock
         │   └── file.js          # GET  /api/fetch/file
         ├── hooks/
-        │   └── usePageTransactions.js   # sessionStorage-backed state per page
+        │   └── useTransactions.js   # sessionStorage-backed global transaction state
         ├── components/       # presentational only — render props, no side effects
-        │   ├── layout/           # Header.jsx, Nav.jsx, CollapsiblePanel.jsx
-        │   ├── charts/           # CategoryChart.jsx, PieChart.jsx
-        │   ├── KpiPanel.jsx, TransactionsTable.jsx
-        │   └── Dashboard.jsx     # composes charts + table + KPIs into the collapsible panels
+        │   ├── layout/           # Header.jsx, Nav.jsx, EmptyState.jsx
+        │   ├── charts/           # SpendingChart.jsx (bar/pie), CategoryScatterChart.jsx
+        │   ├── KpiPanel.jsx, TransactionsTable.jsx, CategoryDetail.jsx
         ├── utils/            # functional components with side effects (fetching, form state)
         │   ├── FetchForm.jsx     # Isracard credentials form -> routes/isracard.js
         │   └── FileLoader.jsx    # sample-file load button -> routes/file.js
-        ├── pages/            # one composition per route: which utils/ + components/ render
-        │   ├── IsracardPage.jsx
-        │   └── FilePage.jsx
+        ├── pages/            # one composition per nav destination
+        │   ├── IsracardPage.jsx, FilePage.jsx
+        │   └── ChartsPage.jsx, TransactionsPage.jsx, OverviewPage.jsx
         ├── App.jsx           # routing only: which page is active, browser history
         ├── main.jsx           # ReactDOM entry point + Chart.js registration
         └── styles.css

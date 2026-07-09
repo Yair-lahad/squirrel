@@ -1,6 +1,9 @@
 const PAGES = [
-  { id: 'isracard', label: 'Fetch from Isracard' },
-  { id: 'file', label: 'Sample file' },
+  { id: 'home', label: 'Home' },
+  { id: 'charts', label: 'Charts' },
+  { id: 'transactions', label: 'Transactions' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'load-data', label: 'Load data' },
 ];
 
 export default function Nav({ page, onChange }) {
@@ -9,7 +12,7 @@ export default function Nav({ page, onChange }) {
       {PAGES.map((p) => (
         <a
           key={p.id}
-          href={`#${p.id}`}
+          href={`/${p.id}`}
           className={p.id === page ? 'active' : ''}
           onClick={(e) => {
             e.preventDefault();
