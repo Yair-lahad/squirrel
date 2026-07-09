@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { fetchAdvisorAnswer } from '../routes/advisor';
+import { fetchAdvisorAnswer } from '../../routes/advisor';
 
-export default function AskAdvisor({ category, transactions }) {
+export default function AskAdvisor({ categories, transactions }) {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -10,7 +10,7 @@ export default function AskAdvisor({ category, transactions }) {
     e.preventDefault();
     if (!question.trim() || loading) return;
     setLoading(true);
-    fetchAdvisorAnswer({ category, transactions, question }).then((data) => {
+    fetchAdvisorAnswer({ categories, transactions, question }).then((data) => {
       setAnswer(data.answer);
       setLoading(false);
     });

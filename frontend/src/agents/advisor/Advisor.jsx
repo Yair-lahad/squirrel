@@ -1,5 +1,9 @@
+/**
+ * `categories` may hold multiple entries (e.g. an "Others" group); the
+ * backend advisor treats them as one combined bucket for its insights.
+ */
 import { useEffect, useState } from 'react';
-import { fetchAdvisorInsights } from '../routes/advisor';
+import { fetchAdvisorInsights } from '../../routes/advisor';
 import AvgSpendChip from './chips/AvgSpendChip';
 import MaxChip from './chips/MaxChip';
 import FrequencyChip from './chips/FrequencyChip';
@@ -13,18 +17,18 @@ const CHIP_BY_TYPE = {
   percent: PercentChip,
 };
 
-export default function Advisor({ category, transactions }) {
+export default function Advisor({ categories, transactions }) {
   const [insights, setInsights] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
-    fetchAdvisorInsights({ category, transactions }).then((data) => {
+    fetchAdvisorInsights({ categories, transactions }).then((data) => {
       if (!cancelled) setInsights(data.insights);
     });
     return () => {
       cancelled = true;
     };
-  }, [category, transactions]);
+  }, [categories, transactions]);
 
   const isEmpty = insights.length === 1 && insights[0].type === 'empty';
 
@@ -35,7 +39,7 @@ export default function Advisor({ category, transactions }) {
         <img src="/squirrel.png" alt="Squirrel advisor" className="advisor-avatar" />
       </div>
       {isEmpty ? (
-        <p className="advisor-empty">No spending recorded for {category} yet.</p>
+        <p className="advisor-empty">No spending recorded for {categories.join(', ')} yet.</p>
       ) : (
         <div className="advisor-chips">
           {insights.map(({ type, ...data }, i) => {
@@ -44,7 +48,7 @@ export default function Advisor({ category, transactions }) {
           })}
         </div>
       )}
-      <AskAdvisor category={category} transactions={transactions} />
+      <AskAdvisor categories={categories} transactions={transactions} />
     </div>
   );
 }

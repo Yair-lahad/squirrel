@@ -4,23 +4,23 @@ const advisor = require('../agents/advisor');
 const router = express.Router();
 
 router.post('/api/advisor/insights', (req, res) => {
-  const { category, transactions } = req.body || {};
+  const { categories, transactions } = req.body || {};
 
-  if (!category || !Array.isArray(transactions)) {
-    return res.status(400).json({ error: 'category and transactions are required' });
+  if (!Array.isArray(categories) || !categories.length || !Array.isArray(transactions)) {
+    return res.status(400).json({ error: 'categories and transactions are required' });
   }
 
-  res.json({ insights: advisor.getAdvice({ category, transactions }) });
+  res.json({ insights: advisor.getAdvice({ categories, transactions }) });
 });
 
 router.post('/api/advisor/ask', (req, res) => {
-  const { category, transactions, question } = req.body || {};
+  const { categories, transactions, question } = req.body || {};
 
-  if (!category || !Array.isArray(transactions) || !question) {
-    return res.status(400).json({ error: 'category, transactions and question are required' });
+  if (!Array.isArray(categories) || !categories.length || !Array.isArray(transactions) || !question) {
+    return res.status(400).json({ error: 'categories, transactions and question are required' });
   }
 
-  res.json(advisor.answerQuestion({ category, transactions, question }));
+  res.json(advisor.answerQuestion({ categories, transactions, question }));
 });
 
 module.exports = router;

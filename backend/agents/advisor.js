@@ -18,11 +18,11 @@ function averageGapDays(items) {
   return totalGapMs / (sortedTimes.length - 1) / DAY_MS;
 }
 
-function getAdvice({ category, transactions }) {
+function getAdvice({ categories, transactions }) {
   const spendTxns = transactions.filter((t) => t.amount < 0);
   const totalSpend = spendTxns.reduce((s, t) => s + Math.abs(t.amount), 0);
 
-  const items = spendTxns.filter((t) => t.category === category);
+  const items = spendTxns.filter((t) => categories.includes(t.category));
   const categorySpend = items.reduce((s, t) => s + Math.abs(t.amount), 0);
   const count = items.length;
 

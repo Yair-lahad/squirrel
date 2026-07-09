@@ -2,7 +2,6 @@ const PAGES = [
   { id: 'home', label: 'Home' },
   { id: 'charts', label: 'Charts' },
   { id: 'transactions', label: 'Transactions' },
-  { id: 'overview', label: 'Overview' },
   { id: 'load-data', label: 'Load data' },
 ];
 

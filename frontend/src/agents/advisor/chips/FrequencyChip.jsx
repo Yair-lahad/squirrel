@@ -1,4 +1,4 @@
-import { formatGap } from '../../core/format';
+import { formatGap } from '../../../core/format';
 
 export default function FrequencyChip({ days }) {
   return (

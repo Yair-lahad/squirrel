@@ -41,8 +41,8 @@ body {
 
 nav.top-nav {
   display: flex;
+  align-items: center;
   gap: 1rem;
-  padding-top: 1rem;
 }
 
 .inline-loader {
@@ -67,36 +67,47 @@ nav.top-nav a.active {
   border-bottom: 2px solid var(--color-primary);
 }
 
-header {
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
   padding: 1.5rem 0 0.5rem;
-  text-align: center;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1.25rem;
+  gap: 0.6rem;
 }
 
 .brand-logo {
-  width: 120px;
-  height: 120px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
 }
 
 .brand-text {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.1rem;
 }
 
 h1 {
+  align-self: flex-start;
   margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  text-align: left;
 }
 
 .subtitle {
   margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.2;
   opacity: 0.7;
 }
 
@@ -172,16 +183,36 @@ button {
   max-width: 480px;
   color: var(--color-text-secondary);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 2;
 }
 
-.kpis {
-  display: flex;
-  gap: 1rem;
+.home-overview {
   margin-top: 1.5rem;
 }
 
-.kpi {
+.home-overview-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.overview-panel {
+  margin-top: 0.75rem;
+}
+
+.overview-period {
+  margin: 0 0 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.overview-figures {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+}
+
+.overview-figure {
   flex: 1;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -190,12 +221,13 @@ button {
   flex-direction: column;
 }
 
-.kpi-label {
+.overview-figure dt {
   opacity: 0.7;
   font-size: 0.85rem;
 }
 
-.kpi-value {
+.overview-figure dd {
+  margin: 0;
   font-size: 1.4rem;
   font-weight: 600;
 }
@@ -241,19 +273,18 @@ button {
 
 .back-link {
   margin-left: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
   border-radius: 999px;
   padding: 0.4rem 0.9rem;
-  color: var(--color-text-secondary);
+  color: #fff;
   font-size: 0.85rem;
   cursor: pointer;
   align-self: center;
 }
 
 .back-link:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  opacity: 0.9;
 }
 
 .category-detail-title {
@@ -273,6 +304,12 @@ button {
   color: var(--color-text-muted);
 }
 
+.category-detail-subtitle {
+  margin: -1rem 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
 .category-detail-amount {
   font-size: 1.5rem;
   font-weight: 700;
@@ -284,7 +321,7 @@ button {
 }
 
 .category-detail-count strong {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   color: var(--color-text-primary);
 }
 
@@ -460,6 +497,43 @@ button {
   color: #fff;
 }
 
+.others-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.others-chip.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.others-chip span {
+  white-space: nowrap;
+}
+
+.others-chip input {
+  width: 2.5rem;
+  padding: 0 0.2rem;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background: rgba(127, 127, 127, 0.15);
+  color: inherit;
+}
+
+.others-chip.active input {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .table-card {
   overflow-x: auto;
   margin-top: 1.5rem;
@@ -495,10 +569,10 @@ th:hover {
   font-weight: 600;
 }
 
-.kpi-value.income {
+.overview-figure dd.income {
   color: var(--color-income);
 }
 
-.kpi-value.expense {
+.overview-figure dd.expense {
   color: var(--color-expense);
 }

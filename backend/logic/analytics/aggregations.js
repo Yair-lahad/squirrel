@@ -25,8 +25,8 @@ function sortTransactions(transactions, key, ascending) {
   });
 }
 
-function categoryDetail(transactions, category) {
-  const items = transactions.filter((t) => t.category === category);
+function categoryDetail(transactions, categories) {
+  const items = transactions.filter((t) => categories.includes(t.category));
   const spend = items.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
   return { items, spend, count: items.length };
 }

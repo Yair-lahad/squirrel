@@ -12,7 +12,6 @@ Single-page React app, five nav destinations (switched client-side):
 - **Charts** — spend by category (bar or pie, amount or transaction count).
   Click a category for detail: a date-vs-amount scatter, plus the Advisor's take.
 - **Transactions** — the full sortable list.
-- **Overview** — income / spend / net totals.
 - **Load data** — fetch real transactions from a vendor (Isracard today, via
   [`israeli-bank-scrapers`](https://github.com/eshaham/israeli-bank-scrapers))
   or load a bundled sample file.
@@ -57,7 +56,7 @@ developing.
 
 ```
 squirrel/
-├── data/               # JSON transaction fixtures
+├── data/               
 ├── backend/
 │   ├── main.js            # Express app: mounts routes/, serves frontend/dist
 │   ├── routes/             # thin HTTP handlers
@@ -65,14 +64,14 @@ squirrel/
 │   │   ├── sources/           # transaction providers: vendor, file, mock
 │   │   └── analytics/         # aggregations.js
 │   └── agents/
-│       └── advisor.js         # first agent
+│       └── advisor.js         # helps understand charts
 └── frontend/            # React + Vite app
     └── src/
         ├── core/               # format.js, palette.js
-        ├── routes/             # htttp handler
+        ├── routes/             # http handler
         ├── hooks/              # useTransactions, useAnalytics
         ├── components/         # presentational only
-        ├── advisor/            # UI half of the Advisor feature
+        ├── agents/             # advisor/ — UI for the advisor agent
         ├── utils/              # FetchForm, FileLoader — side-effecting
         ├── pages/              # one composition per nav destination
         └── App.jsx, main.jsx, styles.css

@@ -34,9 +34,11 @@ router.post('/api/analytics/sort', (req, res) => {
 router.post('/api/analytics/category-detail', (req, res) => {
   const transactions = requireTransactions(req, res);
   if (!transactions) return;
-  const { category } = req.body || {};
-  if (!category) return res.status(400).json({ error: 'category is required' });
-  res.json(analytics.categoryDetail(transactions, category));
+  const { categories } = req.body || {};
+  if (!Array.isArray(categories) || !categories.length) {
+    return res.status(400).json({ error: 'categories array is required' });
+  }
+  res.json(analytics.categoryDetail(transactions, categories));
 });
 
 module.exports = router;

@@ -1,20 +1,21 @@
+// shows the category chart until a category (or "Others" group) is selected, then swaps to its detail view in place.
 import { useState } from 'react';
 import SpendingChart from '../components/charts/SpendingChart';
 import CategoryDetail from '../components/CategoryDetail';
 import EmptyState from '../components/layout/EmptyState';
 
 export default function ChartsPage({ transactions }) {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategories, setSelectedCategories] = useState(null);
   const [metric, setMetric] = useState('amount');
 
   if (!transactions.length) return <EmptyState />;
 
-  if (selectedCategory) {
+  if (selectedCategories) {
     return (
       <CategoryDetail
-        category={selectedCategory}
+        categories={selectedCategories}
         transactions={transactions}
-        onBack={() => setSelectedCategory(null)}
+        onBack={() => setSelectedCategories(null)}
       />
     );
   }
@@ -25,7 +26,7 @@ export default function ChartsPage({ transactions }) {
         transactions={transactions}
         metric={metric}
         onMetricChange={setMetric}
-        onSelectCategory={setSelectedCategory}
+        onSelectCategories={setSelectedCategories}
       />
     </div>
   );

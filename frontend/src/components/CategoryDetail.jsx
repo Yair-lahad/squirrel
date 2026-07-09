@@ -1,37 +1,39 @@
+/**
+ * `categories` is always an array: one entry for a normal category click,
+ * several when an "Others" group (see othersThreshold.js) was clicked.
+ */
 import { fetchCategoryDetail } from '../routes/analytics';
 import { useAnalytics } from '../hooks/useAnalytics';
-import { formatCurrency, formatMonthYear } from '../core/format';
+import { formatCurrency, formatPeriod } from '../core/format';
 import CategoryScatterChart from './charts/CategoryScatterChart';
-import Advisor from '../advisor/Advisor';
+import { OTHERS_LABEL } from './charts/othersThreshold';
+import Advisor from '../agents/advisor/Advisor';
 
-function periodLabel(items) {
-  if (!items.length) return '';
-  const times = items.map((t) => new Date(t.date).getTime());
-  const earliest = formatMonthYear(Math.min(...times));
-  const latest = formatMonthYear(Math.max(...times));
-  return earliest === latest ? earliest : `${earliest} – ${latest}`;
-}
-
-export default function CategoryDetail({ category, transactions, onBack }) {
-  const detail = useAnalytics(() => fetchCategoryDetail(transactions, category), [transactions, category]);
+export default function CategoryDetail({ categories, transactions, onBack }) {
+  const detail = useAnalytics(() => fetchCategoryDetail(transactions, categories), [transactions, categories]);
 
   if (!detail) return null;
 
   const { items, spend, count } = detail;
+  const isGroup = categories.length > 1;
+  const title = isGroup ? OTHERS_LABEL : categories[0];
 
   return (
     <div className="category-detail">
       <div className="category-detail-title">
-        <h2>{category} <span className="category-detail-period">- {periodLabel(items)}</span></h2>
+        <h2>
+          {title} <span className="category-detail-period">{formatPeriod(items)}</span>
+        </h2>
         <span className="category-detail-amount">{formatCurrency(spend)}</span>
         <span className="category-detail-count">
           <strong>{count}</strong> transaction{count === 1 ? '' : 's'}
         </span>
         <button type="button" className="back-link" onClick={onBack}>← Back to charts</button>
       </div>
+      {isGroup && <p className="category-detail-subtitle">{categories.join(', ')}</p>}
       <div className="category-detail-layout">
         <CategoryScatterChart transactions={items} />
-        <Advisor category={category} transactions={transactions} />
+        <Advisor categories={categories} transactions={transactions} />
       </div>
     </div>
   );

@@ -5,19 +5,16 @@ import HomePage from './pages/HomePage';
 import LoadDataPage from './pages/LoadDataPage';
 import ChartsPage from './pages/ChartsPage';
 import TransactionsPage from './pages/TransactionsPage';
-import OverviewPage from './pages/OverviewPage';
 import { useTransactions } from './hooks/useTransactions';
 
 const PAGES = {
   home: HomePage,
   charts: ChartsPage,
   transactions: TransactionsPage,
-  overview: OverviewPage,
   'load-data': LoadDataPage,
 };
 
-// TODO: default back to 'home' once it's ready to be the landing page.
-const DEFAULT_PAGE = 'charts';
+const DEFAULT_PAGE = 'home';
 
 function currentPage() {
   const path = window.location.pathname.slice(1);
@@ -43,8 +40,10 @@ export default function App() {
 
   return (
     <>
-      <Header />
-      <Nav page={page} onChange={changePage} />
+      <header className="site-header">
+        <Nav page={page} onChange={changePage} />
+        <Header />
+      </header>
       <Page transactions={transactions} onLoaded={setTransactions} />
     </>
   );

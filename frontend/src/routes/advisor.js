@@ -1,17 +1,17 @@
 import { parseJson } from './http';
 
-export function fetchAdvisorInsights({ category, transactions }) {
+export function fetchAdvisorInsights({ categories, transactions }) {
   return fetch('/api/advisor/insights', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ category, transactions }),
+    body: JSON.stringify({ categories, transactions }),
   }).then(parseJson);
 }
 
-export function fetchAdvisorAnswer({ category, transactions, question }) {
+export function fetchAdvisorAnswer({ categories, transactions, question }) {
   return fetch('/api/advisor/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ category, transactions, question }),
+    body: JSON.stringify({ categories, transactions, question }),
   }).then(parseJson);
 }

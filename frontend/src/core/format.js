@@ -1,5 +1,10 @@
 export function formatCurrency(n) {
-  return new Intl.NumberFormat('en-IL', { style: 'currency', currency: 'ILS' }).format(n);
+  return new Intl.NumberFormat('en-IL', {
+    style: 'currency',
+    currency: 'ILS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 export function formatGap(days) {
@@ -15,4 +20,23 @@ export function formatDayMonth(date) {
 
 export function formatMonthYear(date) {
   return new Date(date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+}
+
+function formatMonth(date) {
+  return new Date(date).toLocaleDateString('en-GB', { month: 'long' });
+}
+
+export function formatPeriod(transactions) {
+  if (!transactions.length) return '';
+  const times = transactions.map((t) => new Date(t.date).getTime());
+  const earliestDate = new Date(Math.min(...times));
+  const latestDate = new Date(Math.max(...times));
+
+  if (earliestDate.getTime() === latestDate.getTime()) return formatMonthYear(earliestDate);
+
+  if (earliestDate.getFullYear() === latestDate.getFullYear()) {
+    return `${formatMonth(earliestDate)}–${formatMonthYear(latestDate)}`;
+  }
+
+  return `${formatMonthYear(earliestDate)} – ${formatMonthYear(latestDate)}`;
 }

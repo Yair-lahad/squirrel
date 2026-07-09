@@ -31,12 +31,26 @@ export default function CategoryScatterChart({ transactions }) {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          title: () => '',
+          title(items) {
+            return items[0].raw.description;
+          },
           label(ctx) {
             const p = ctx.raw;
-            return `${formatDayMonth(p.date)} — ${p.description}: ${formatCurrency(Math.abs(p.amount))}`;
+            return [formatCurrency(Math.abs(p.amount)), formatDayMonth(p.date)];
           },
         },
+        backgroundColor: 'rgba(40, 40, 40, 0.85)',
+        titleColor: '#fff',
+        bodyColor: '#f0f0f0',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+        titleFont: { weight: '600', size: 13 },
+        bodyFont: { size: 12 },
+        bodySpacing: 3,
+        bodyAlign: 'center',
       },
     },
     scales: {
