@@ -1,19 +1,35 @@
+import { fetchCategoryDetail } from '../routes/analytics';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { formatCurrency } from '../core/format';
 import CategoryScatterChart from './charts/CategoryScatterChart';
+import Advisor from '../advisor/Advisor';
 
 export default function CategoryDetail({ category, transactions, onBack }) {
-  const items = transactions.filter((t) => t.category === category);
-  const spend = items.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const detail = useAnalytics(() => fetchCategoryDetail(transactions, category), [transactions, category]);
+
+  if (!detail) return null;
+
+  const { items, spend, count } = detail;
 
   return (
     <div className="category-detail">
-      <button type="button" className="back-link" onClick={onBack}>← Show all transactions</button>
-      <h2>{category}</h2>
-      <p className="category-detail-summary">
-        {formatCurrency(spend)} across {items.length} transaction{items.length === 1 ? '' : 's'}
-      </p>
-      <div className="chart-card">
-        <CategoryScatterChart transactions={items} />
+      <div className="category-detail-title">
+        <div className="category-detail-heading">
+          <h2>{category}</h2>
+          <span className="category-detail-amount">{formatCurrency(-spend)}</span>
+          <span className="category-detail-count">
+            <strong>{count}</strong> transaction{count === 1 ? '' : 's'}
+          </span>
+        </div>
+        <button type="button" className="back-link" onClick={onBack}>← Back to charts</button>
+      </div>
+      <div className="category-detail-layout">
+        <div className="category-detail-graph chart-card">
+          <CategoryScatterChart transactions={items} />
+        </div>
+        <div className="category-detail-advisor">
+          <Advisor category={category} transactions={transactions} />
+        </div>
       </div>
     </div>
   );

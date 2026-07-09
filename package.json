@@ -4,7 +4,7 @@
   "description": "Personal money flow dashboard",
   "main": "backend/server.js",
   "scripts": {
-    "dev:backend": "node backend/server.js",
+    "dev:backend": "nodemon backend/server.js",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev": "concurrently -n backend,frontend -c blue,green \"npm:dev:backend\" \"npm:dev:frontend\"",
     "build": "npm --prefix frontend run build",
@@ -15,6 +15,7 @@
     "israeli-bank-scrapers": "^6.8.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.7"
   }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fetchIsracard } from '../routes/isracard';
+import { fetchVendor } from '../routes/vendor';
 import { fetchMock } from '../routes/mock';
 
 const FIELDS = [
@@ -21,7 +21,7 @@ export default function FetchForm({ onLoaded }) {
     e.preventDefault();
     setStatus({ message: 'Fetching…', error: false });
     try {
-      const data = await fetchIsracard(form);
+      const data = await fetchVendor(form);
       onLoaded(data);
       setStatus({ message: `Loaded ${data.length} transactions.`, error: false });
     } catch (err) {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { sortTransactions } from '../core/aggregations';
+import { fetchSortedTransactions } from '../routes/analytics';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { formatCurrency } from '../core/format';
 
 const COLUMNS = [
@@ -21,7 +22,12 @@ export default function TransactionsTable({ transactions }) {
     }
   }
 
-  const sorted = sortTransactions(transactions, sortKey, sortAsc);
+  const sorted = useAnalytics(
+    () => fetchSortedTransactions(transactions, sortKey, sortAsc),
+    [transactions, sortKey, sortAsc]
+  );
+
+  if (!sorted) return null;
 
   return (
     <div className="table-card">

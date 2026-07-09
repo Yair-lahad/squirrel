@@ -2,6 +2,32 @@
   color-scheme: light;
   font-family: system-ui, sans-serif;
   scrollbar-gutter: stable;
+
+  /* Single source of truth for color: every page/component pulls from these.
+     Chart.js can't read CSS variables directly (it draws to canvas), so
+     core/palette.js reads these same custom properties at runtime via
+     getComputedStyle — one definition, two consumers. */
+  --color-surface: #fcfcfb;
+  --color-text-primary: #0b0b0b;
+  --color-text-secondary: #52514e;
+  --color-text-muted: #898781;
+  --color-border: #e1e0d9;
+  --color-border-light: #eeeeec;
+  --color-primary: #2a78d6;
+  --color-income: #006300;
+  --color-expense: #e34948;
+  --color-error: #d33;
+  --color-bubble-bg: #eef4fb;
+
+  /* fixed categorical order — never cycled/reassigned by rank */
+  --chart-1: #2a78d6;
+  --chart-2: #1baf7a;
+  --chart-3: #eda100;
+  --chart-4: #008300;
+  --chart-5: #4a3aa7;
+  --chart-6: #e34948;
+  --chart-7: #e87ba4;
+  --chart-8: #eb6834;
 }
 
 body {
@@ -9,8 +35,8 @@ body {
   padding: 0 1.5rem 3rem;
   max-width: 1280px;
   margin-inline: auto;
-  background: #fcfcfb;
-  color: #0b0b0b;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 
 nav.top-nav {
@@ -24,21 +50,21 @@ nav.top-nav {
   align-items: center;
   gap: 0.75rem;
   margin-top: 1.5rem;
-  border: 1px solid #e1e0d9;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
 }
 
 nav.top-nav a {
-  color: #52514e;
+  color: var(--color-text-secondary);
   text-decoration: none;
   padding-bottom: 0.25rem;
 }
 
 nav.top-nav a.active {
-  color: #0b0b0b;
+  color: var(--color-text-primary);
   font-weight: 600;
-  border-bottom: 2px solid #2a78d6;
+  border-bottom: 2px solid var(--color-primary);
 }
 
 header {
@@ -75,7 +101,7 @@ h1 {
 }
 
 #fetch-panel {
-  border: 1px solid #e1e0d9;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-top: 1rem;
@@ -119,12 +145,12 @@ button {
 }
 
 .status.error {
-  color: #d33;
+  color: var(--color-error);
 }
 
 .empty-state {
   margin-top: 1.5rem;
-  color: #898781;
+  color: var(--color-text-muted);
 }
 
 .home-page {
@@ -144,7 +170,7 @@ button {
 
 .home-description {
   max-width: 480px;
-  color: #52514e;
+  color: var(--color-text-secondary);
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -157,7 +183,7 @@ button {
 
 .kpi {
   flex: 1;
-  border: 1px solid #e1e0d9;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   display: flex;
@@ -184,7 +210,7 @@ button {
 .chart-card {
   flex: 1;
   min-width: 420px;
-  border: 1px solid #e1e0d9;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 1.5rem;
 }
@@ -206,7 +232,7 @@ button {
 .chart-hint {
   margin: -0.5rem 0 0.75rem;
   font-size: 0.8rem;
-  color: #898781;
+  color: var(--color-text-muted);
 }
 
 .category-detail {
@@ -217,18 +243,106 @@ button {
   background: none;
   border: none;
   padding: 0;
-  color: #2a78d6;
-  font-size: 0.9rem;
+  color: var(--color-primary);
+  font-size: 0.85rem;
   cursor: pointer;
+  align-self: center;
 }
 
-.category-detail h2 {
-  margin: 0.75rem 0 0.25rem;
+.category-detail-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.75rem 0 1.25rem;
+  flex-wrap: wrap;
 }
 
-.category-detail-summary {
-  margin: 0 0 1rem;
-  color: #52514e;
+.category-detail-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.category-detail-heading h2 {
+  margin: 0;
+}
+
+.category-detail-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-expense);
+}
+
+.category-detail-count {
+  color: var(--color-text-secondary);
+}
+
+.category-detail-count strong {
+  font-size: 1.3rem;
+  color: var(--color-text-primary);
+}
+
+.category-detail-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.category-detail-graph {
+  flex: 2 1 0;
+  min-width: 0;
+}
+
+.category-detail-advisor {
+  flex: 1 1 0;
+  min-width: 240px;
+}
+
+.advisor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.advisor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.advisor-title {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.advisor-avatar {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.advisor-bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.advisor-bubble {
+  background: var(--color-bubble-bg);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  line-height: 1.5;
 }
 
 .chart-controls {
@@ -250,15 +364,15 @@ button {
 .metric-toggle button {
   padding: 0.3rem 0.7rem;
   font-size: 0.8rem;
-  border: 1px solid #e1e0d9;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   background: transparent;
-  color: #52514e;
+  color: var(--color-text-secondary);
 }
 
 .metric-toggle button.active {
-  background: #2a78d6;
-  border-color: #2a78d6;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
 }
 
@@ -275,7 +389,7 @@ table {
 th, td {
   text-align: left;
   padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid #eeeeec;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 th {
@@ -289,10 +403,18 @@ th:hover {
 }
 
 .amount-expense {
-  color: #0b0b0b;
+  color: var(--color-text-primary);
 }
 
 .amount-income {
-  color: #006300;
+  color: var(--color-income);
   font-weight: 600;
+}
+
+.kpi-value.income {
+  color: var(--color-income);
+}
+
+.kpi-value.expense {
+  color: var(--color-expense);
 }

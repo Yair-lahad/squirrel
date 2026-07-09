@@ -1,10 +1,10 @@
-export function totals(transactions) {
+function totals(transactions) {
   const income = transactions.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const spend = transactions.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0);
   return { income, spend, net: income + spend };
 }
 
-export function byCategory(transactions) {
+function byCategory(transactions) {
   const byCat = {};
   for (const t of transactions) {
     if (t.amount >= 0) continue;
@@ -19,7 +19,7 @@ export function byCategory(transactions) {
 // Folds everything past the top `limit` entries (by `key`) into a single
 // "Other" bucket — a pie only reads cleanly with a handful of slices, and
 // the fixed categorical palette only has so many distinguishable hues.
-export function topWithOther(rows, key, limit = 7) {
+function topWithOther(rows, key, limit = 7) {
   const sorted = [...rows].sort((a, b) => b[key] - a[key]);
   if (sorted.length <= limit) return sorted;
 
@@ -32,7 +32,7 @@ export function topWithOther(rows, key, limit = 7) {
   return [...top, other];
 }
 
-export function sortTransactions(transactions, key, ascending) {
+function sortTransactions(transactions, key, ascending) {
   const dir = ascending ? 1 : -1;
   return [...transactions].sort((a, b) => {
     if (a[key] < b[key]) return -1 * dir;
@@ -40,3 +40,11 @@ export function sortTransactions(transactions, key, ascending) {
     return 0;
   });
 }
+
+function categoryDetail(transactions, category) {
+  const items = transactions.filter((t) => t.category === category);
+  const spend = items.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  return { items, spend, count: items.length };
+}
+
+module.exports = { totals, byCategory, topWithOther, sortTransactions, categoryDetail };

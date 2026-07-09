@@ -27,7 +27,6 @@ function currentPage() {
 export default function App() {
   const [page, setPage] = useState(currentPage);
   const [transactions, setTransactions] = useTransactions();
-  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     const onPopState = () => setPage(currentPage());
@@ -38,13 +37,6 @@ export default function App() {
   function changePage(next) {
     window.history.pushState(null, '', `/${next}`);
     setPage(next);
-    setSelectedCategory(null);
-  }
-
-  function handleSelectCategory(category) {
-    window.history.pushState(null, '', '/transactions');
-    setPage('transactions');
-    setSelectedCategory(category);
   }
 
   const Page = PAGES[page];
@@ -53,13 +45,7 @@ export default function App() {
     <>
       <Header />
       <Nav page={page} onChange={changePage} />
-      <Page
-        transactions={transactions}
-        onLoaded={setTransactions}
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleSelectCategory}
-        onClearCategory={() => setSelectedCategory(null)}
-      />
+      <Page transactions={transactions} onLoaded={setTransactions} />
     </>
   );
 }

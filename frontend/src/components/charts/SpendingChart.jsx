@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
-import { byCategory, topWithOther } from '../../core/aggregations';
+import { fetchTopWithOther } from '../../routes/analytics';
+import { useAnalytics } from '../../hooks/useAnalytics';
 import { formatCurrency } from '../../core/format';
 import { PALETTE } from '../../core/palette';
 
@@ -15,6 +16,8 @@ const METRICS = [
 ];
 
 const OTHER = 'Other';
+const PIE_LIMIT = 7;
+const BAR_LIMIT = 999; // effectively "no folding" — bar charts read fine with more categories
 
 function tooltipLabelFor(rows, metric) {
   return (ctx) => {
@@ -28,10 +31,10 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
   const [view, setView] = useState('bar');
   const [metric, setMetric] = useState('amount');
 
-  const allRows = byCategory(transactions);
-  const rows = view === 'pie'
-    ? topWithOther(allRows, metric)
-    : [...allRows].sort((a, b) => b[metric] - a[metric]);
+  const limit = view === 'pie' ? PIE_LIMIT : BAR_LIMIT;
+  const rows = useAnalytics(() => fetchTopWithOther(transactions, metric, limit), [transactions, metric, limit]);
+
+  if (!rows) return null;
 
   const colors = rows.map((_, i) => PALETTE.categorical[i % PALETTE.categorical.length]);
   const labels = rows.map((r) => r.category);
@@ -69,7 +72,7 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
   } else {
     chart = (
       <Pie
-        data={{ labels, datasets: [{ data: values, backgroundColor: colors, borderColor: '#fcfcfb', borderWidth: 2 }] }}
+        data={{ labels, datasets: [{ data: values, backgroundColor: colors, borderColor: PALETTE.surface, borderWidth: 2 }] }}
         options={{
           maintainAspectRatio: false,
           onClick: handleClick,
@@ -77,7 +80,7 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
             event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
           },
           plugins: {
-            legend: { position: 'right', labels: { color: '#0b0b0b', boxWidth: 12 } },
+            legend: { position: 'right', labels: { color: PALETTE.textPrimary, boxWidth: 12 } },
             tooltip: { callbacks: { label: tooltipLabelFor(rows, metric) } },
           },
         }}
