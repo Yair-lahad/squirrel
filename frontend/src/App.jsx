@@ -5,12 +5,14 @@ import HomePage from './pages/HomePage';
 import LoadDataPage from './pages/LoadDataPage';
 import ChartsPage from './pages/ChartsPage';
 import TransactionsPage from './pages/TransactionsPage';
+import CategoriesPage from './pages/CategoriesPage';
 import { useTransactions } from './hooks/useTransactions';
 
 const PAGES = {
   home: HomePage,
   charts: ChartsPage,
   transactions: TransactionsPage,
+  categories: CategoriesPage,
   'load-data': LoadDataPage,
 };
 

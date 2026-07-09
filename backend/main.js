@@ -5,6 +5,7 @@ const mockRoute = require('./routes/mock');
 const fileRoute = require('./routes/file');
 const analyticsRoute = require('./routes/analytics');
 const advisorRoute = require('./routes/advisor');
+const categoriesRoute = require('./routes/categories');
 
 const app = express();
 app.use(express.json());
@@ -15,6 +16,7 @@ app.use(mockRoute);
 app.use(fileRoute);
 app.use(analyticsRoute);
 app.use(advisorRoute);
+app.use(categoriesRoute);
 
 // Client-side routing (no # in the URL) means the browser can request paths
 // like /charts directly (e.g. on refresh) that don't exist as files — fall

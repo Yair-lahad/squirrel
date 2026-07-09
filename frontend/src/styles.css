@@ -287,7 +287,7 @@ button {
   opacity: 0.9;
 }
 
-.category-detail-title {
+.summary-header {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -295,11 +295,11 @@ button {
   margin: 0.75rem 0 1.25rem;
 }
 
-.category-detail-title h2 {
+.summary-header h2 {
   margin: 0;
 }
 
-.category-detail-period {
+.summary-header-period {
   font-size: 1rem;
   color: var(--color-text-muted);
 }
@@ -310,17 +310,21 @@ button {
   color: var(--color-text-muted);
 }
 
-.category-detail-amount {
+.summary-header-amount {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-expense);
 }
 
-.category-detail-count {
+.summary-header-amount.income {
+  color: var(--color-income);
+}
+
+.summary-header-count {
   color: var(--color-text-secondary);
 }
 
-.category-detail-count strong {
+.summary-header-count strong {
   font-size: 1.5rem;
   color: var(--color-text-primary);
 }
@@ -558,6 +562,76 @@ th {
 
 th:hover {
   opacity: 1;
+}
+
+.category-cell span {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--color-border-light);
+}
+
+.category-cell input {
+  width: 100%;
+}
+
+.category-select-creating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.category-select-back {
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+}
+
+.category-grid-section {
+  margin-top: 2rem;
+}
+
+.category-grid-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1rem;
+}
+
+.category-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.category-chip-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.category-chip-label {
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
+.row-number-header {
+  cursor: default;
+}
+
+.row-number {
+  color: var(--color-text-muted);
 }
 
 .amount-expense {

@@ -1,5 +1,7 @@
 const express = require('express');
 const vendorSource = require('../logic/sources/vendorSource');
+const rulesStore = require('../logic/categorization/rulesStore');
+const { applyRules } = require('../logic/categorization/applyRules');
 
 const router = express.Router();
 
@@ -12,7 +14,7 @@ router.post('/api/fetch/vendor', async (req, res) => {
 
   try {
     const transactions = await vendorSource.fetchTransactions({ id, password, card6Digits, startDate });
-    res.json(transactions);
+    res.json(applyRules(transactions, rulesStore.listRules()));
   } catch (err) {
     res.status(502).json({ error: err.message || 'Fetch failed' });
   }
