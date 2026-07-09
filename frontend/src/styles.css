@@ -347,8 +347,14 @@ button {
 
 .chart-controls {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
+}
+
+.chart-controls .toggle-group + .toggle-group {
+  padding-left: 1rem;
+  border-left: 1px solid var(--color-border);
 }
 
 .chart-canvas {
@@ -356,12 +362,12 @@ button {
   height: 560px;
 }
 
-.metric-toggle {
+.toggle-group {
   display: flex;
   gap: 0.5rem;
 }
 
-.metric-toggle button {
+.toggle-group button {
   padding: 0.3rem 0.7rem;
   font-size: 0.8rem;
   border: 1px solid var(--color-border);
@@ -370,7 +376,7 @@ button {
   color: var(--color-text-secondary);
 }
 
-.metric-toggle button.active {
+.toggle-group button.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: #fff;

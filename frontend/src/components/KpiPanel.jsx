@@ -20,7 +20,7 @@ export default function KpiPanel({ transactions }) {
       </div>
       <div className="kpi">
         <span className="kpi-label">Net</span>
-        <span className={`kpi-value ${net >= 0 ? 'income' : 'expense'}`}>{formatCurrency(net)}</span>
+        <span className={`kpi-value ${net >= 0 ? 'income' : 'expense'}`}>{formatCurrency(Math.abs(net))}</span>
       </div>
     </div>
   );

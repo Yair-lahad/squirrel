@@ -16,22 +16,6 @@ function byCategory(transactions) {
   return Object.values(byCat).sort((a, b) => b.amount - a.amount);
 }
 
-// Folds everything past the top `limit` entries (by `key`) into a single
-// "Other" bucket — a pie only reads cleanly with a handful of slices, and
-// the fixed categorical palette only has so many distinguishable hues.
-function topWithOther(rows, key, limit = 7) {
-  const sorted = [...rows].sort((a, b) => b[key] - a[key]);
-  if (sorted.length <= limit) return sorted;
-
-  const top = sorted.slice(0, limit);
-  const rest = sorted.slice(limit);
-  const other = rest.reduce(
-    (acc, r) => ({ category: 'Other', amount: acc.amount + r.amount, count: acc.count + r.count }),
-    { category: 'Other', amount: 0, count: 0 }
-  );
-  return [...top, other];
-}
-
 function sortTransactions(transactions, key, ascending) {
   const dir = ascending ? 1 : -1;
   return [...transactions].sort((a, b) => {
@@ -47,4 +31,4 @@ function categoryDetail(transactions, category) {
   return { items, spend, count: items.length };
 }
 
-module.exports = { totals, byCategory, topWithOther, sortTransactions, categoryDetail };
+module.exports = { totals, byCategory, sortTransactions, categoryDetail };

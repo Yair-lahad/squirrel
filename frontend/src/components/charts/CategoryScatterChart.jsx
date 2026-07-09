@@ -34,7 +34,7 @@ export default function CategoryScatterChart({ transactions }) {
           title: () => '',
           label(ctx) {
             const p = ctx.raw;
-            return `${p.date} — ${p.description}: ${formatCurrency(p.amount)}`;
+            return `${p.date} — ${p.description}: ${formatCurrency(Math.abs(p.amount))}`;
           },
         },
       },

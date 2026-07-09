@@ -16,7 +16,7 @@ export default function CategoryDetail({ category, transactions, onBack }) {
       <div className="category-detail-title">
         <div className="category-detail-heading">
           <h2>{category}</h2>
-          <span className="category-detail-amount">{formatCurrency(-spend)}</span>
+          <span className="category-detail-amount">{formatCurrency(spend)}</span>
           <span className="category-detail-count">
             <strong>{count}</strong> transaction{count === 1 ? '' : 's'}
           </span>

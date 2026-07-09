@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
-import { fetchTopWithOther } from '../../routes/analytics';
+import { fetchByCategory } from '../../routes/analytics';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { formatCurrency } from '../../core/format';
 import { PALETTE } from '../../core/palette';
@@ -15,10 +15,6 @@ const METRICS = [
   { key: 'count', label: 'Number of transactions' },
 ];
 
-const OTHER = 'Other';
-const PIE_LIMIT = 7;
-const BAR_LIMIT = 999; // effectively "no folding" — bar charts read fine with more categories
-
 function tooltipLabelFor(rows, metric) {
   return (ctx) => {
     const row = rows[ctx.dataIndex];
@@ -31,8 +27,10 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
   const [view, setView] = useState('bar');
   const [metric, setMetric] = useState('amount');
 
-  const limit = view === 'pie' ? PIE_LIMIT : BAR_LIMIT;
-  const rows = useAnalytics(() => fetchTopWithOther(transactions, metric, limit), [transactions, metric, limit]);
+  const rows = useAnalytics(
+    () => fetchByCategory(transactions).then((byCategory) => [...byCategory].sort((a, b) => b[metric] - a[metric])),
+    [transactions, metric]
+  );
 
   if (!rows) return null;
 
@@ -43,9 +41,6 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
   function handleClick(_event, elements) {
     if (!elements.length) return;
     const row = rows[elements[0].index];
-    // the pie's "Other" slice folds multiple categories together — there's
-    // no single category to drill into, so it's not clickable.
-    if (row.category === OTHER) return;
     onSelectCategory(row.category);
   }
 
@@ -93,14 +88,14 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
       <div className="chart-header">
         <h3>Spend by category</h3>
         <div className="chart-controls">
-          <div className="metric-toggle">
+          <div className="toggle-group view-toggle">
             {VIEWS.map((v) => (
               <button key={v.key} type="button" className={v.key === view ? 'active' : ''} onClick={() => setView(v.key)}>
                 {v.label}
               </button>
             ))}
           </div>
-          <div className="metric-toggle">
+          <div className="toggle-group metric-toggle">
             {METRICS.map((m) => (
               <button key={m.key} type="button" className={m.key === metric ? 'active' : ''} onClick={() => setMetric(m.key)}>
                 {m.label}

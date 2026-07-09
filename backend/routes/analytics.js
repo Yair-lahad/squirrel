@@ -24,13 +24,6 @@ router.post('/api/analytics/by-category', (req, res) => {
   res.json(analytics.byCategory(transactions));
 });
 
-router.post('/api/analytics/top-with-other', (req, res) => {
-  const transactions = requireTransactions(req, res);
-  if (!transactions) return;
-  const { metric = 'amount', limit = 7 } = req.body || {};
-  res.json(analytics.topWithOther(analytics.byCategory(transactions), metric, limit));
-});
-
 router.post('/api/analytics/sort', (req, res) => {
   const transactions = requireTransactions(req, res);
   if (!transactions) return;
