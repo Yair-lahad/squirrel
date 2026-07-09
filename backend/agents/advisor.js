@@ -1,10 +1,7 @@
 // Rule-based placeholder for what will eventually be an AI-generated advisor.
 // Takes the already-loaded transactions (the backend has no persistence of
-// its own) and a category, and returns a handful of plain-English messages.
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-IL', { style: 'currency', currency: 'ILS' }).format(amount);
-}
+// its own) and a category, and returns a handful of structured insights —
+// formatting/labels are the frontend's job, this just computes the numbers.
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 
@@ -21,12 +18,6 @@ function averageGapDays(items) {
   return totalGapMs / (sortedTimes.length - 1) / DAY_MS;
 }
 
-function formatGap(days) {
-  const weeks = days / 7;
-  if (weeks >= 1) return `${weeks.toFixed(1)} week${weeks.toFixed(1) === '1.0' ? '' : 's'}`;
-  return `${days.toFixed(1)} day${days.toFixed(1) === '1.0' ? '' : 's'}`;
-}
-
 function getAdvice({ category, transactions }) {
   const spendTxns = transactions.filter((t) => t.amount < 0);
   const totalSpend = spendTxns.reduce((s, t) => s + Math.abs(t.amount), 0);
@@ -35,30 +26,39 @@ function getAdvice({ category, transactions }) {
   const categorySpend = items.reduce((s, t) => s + Math.abs(t.amount), 0);
   const count = items.length;
 
-  const messages = [];
-
   if (count === 0) {
-    messages.push(`No spending recorded for ${category} yet.`);
-    return messages;
+    return [{ type: 'empty' }];
   }
 
-  const avg = categorySpend / count;
-  messages.push(`Your average ${category} charge is ${formatCurrency(avg)}.`);
+  const insights = [];
+
+  insights.push({ type: 'avg', amount: categorySpend / count });
 
   const biggest = items.reduce((max, t) => (Math.abs(t.amount) > Math.abs(max.amount) ? t : max));
-  messages.push(`Your biggest ${category} charge was "${biggest.description}" for ${formatCurrency(Math.abs(biggest.amount))} on ${biggest.date}.`);
+  insights.push({
+    type: 'max',
+    amount: Math.abs(biggest.amount),
+    description: biggest.description,
+    date: biggest.date,
+  });
 
   const avgGapDays = averageGapDays(items);
   if (avgGapDays !== null) {
-    messages.push(`You spend on ${category} about every ${formatGap(avgGapDays)} on average.`);
+    insights.push({ type: 'frequency', days: avgGapDays });
   }
 
   if (totalSpend > 0) {
-    const percent = (categorySpend / totalSpend) * 100;
-    messages.push(`${category} makes up ${percent.toFixed(1)}% of your total spend.`);
+    insights.push({ type: 'percent', percent: (categorySpend / totalSpend) * 100 });
   }
 
-  return messages;
+  return insights;
 }
 
-module.exports = { getAdvice };
+// Placeholder for free-form Q&A — real reasoning (and real insights, not
+// just an acknowledgement) is future work, likely once this is backed by
+// an actual AI-generated response instead of rules.
+function answerQuestion({ question }) {
+  return { answer: `Free-form answers aren't wired up yet — you asked: "${question}".` };
+}
+
+module.exports = { getAdvice, answerQuestion };

@@ -5,6 +5,7 @@ import EmptyState from '../components/layout/EmptyState';
 
 export default function ChartsPage({ transactions }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [metric, setMetric] = useState('amount');
 
   if (!transactions.length) return <EmptyState />;
 
@@ -20,7 +21,12 @@ export default function ChartsPage({ transactions }) {
 
   return (
     <div className="charts">
-      <SpendingChart transactions={transactions} onSelectCategory={setSelectedCategory} />
+      <SpendingChart
+        transactions={transactions}
+        metric={metric}
+        onMetricChange={setMetric}
+        onSelectCategory={setSelectedCategory}
+      />
     </div>
   );
 }

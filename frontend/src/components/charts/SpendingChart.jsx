@@ -4,15 +4,11 @@ import { fetchByCategory } from '../../routes/analytics';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { formatCurrency } from '../../core/format';
 import { PALETTE } from '../../core/palette';
+import MetricToggle from './MetricToggle';
 
 const VIEWS = [
   { key: 'bar', label: 'Bar' },
   { key: 'pie', label: 'Pie' },
-];
-
-const METRICS = [
-  { key: 'amount', label: 'Amount' },
-  { key: 'count', label: 'Number of transactions' },
 ];
 
 function tooltipLabelFor(rows, metric) {
@@ -23,9 +19,8 @@ function tooltipLabelFor(rows, metric) {
   };
 }
 
-export default function SpendingChart({ transactions, onSelectCategory }) {
+export default function SpendingChart({ transactions, metric, onMetricChange, onSelectCategory }) {
   const [view, setView] = useState('bar');
-  const [metric, setMetric] = useState('amount');
 
   const rows = useAnalytics(
     () => fetchByCategory(transactions).then((byCategory) => [...byCategory].sort((a, b) => b[metric] - a[metric])),
@@ -95,13 +90,7 @@ export default function SpendingChart({ transactions, onSelectCategory }) {
               </button>
             ))}
           </div>
-          <div className="toggle-group metric-toggle">
-            {METRICS.map((m) => (
-              <button key={m.key} type="button" className={m.key === metric ? 'active' : ''} onClick={() => setMetric(m.key)}>
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <MetricToggle metric={metric} onChange={onMetricChange} />
         </div>
       </div>
       <p className="chart-hint">Click a category to see its transactions.</p>

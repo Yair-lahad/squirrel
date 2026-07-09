@@ -240,33 +240,37 @@ button {
 }
 
 .back-link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--color-primary);
+  margin-left: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   cursor: pointer;
   align-self: center;
 }
 
+.back-link:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
 .category-detail-title {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0.75rem 0 1.25rem;
   flex-wrap: wrap;
-}
-
-.category-detail-heading {
-  display: flex;
-  align-items: baseline;
   gap: 0.9rem;
-  flex-wrap: wrap;
+  margin: 0.75rem 0 1.25rem;
 }
 
-.category-detail-heading h2 {
+.category-detail-title h2 {
   margin: 0;
+}
+
+.category-detail-period {
+  font-size: 1rem;
+  color: var(--color-text-muted);
 }
 
 .category-detail-amount {
@@ -290,13 +294,13 @@ button {
   align-items: flex-start;
 }
 
-.category-detail-graph {
-  flex: 2 1 0;
+.category-detail-layout .chart-card {
+  flex: 2;
   min-width: 0;
 }
 
-.category-detail-advisor {
-  flex: 1 1 0;
+.category-detail-layout .advisor-panel {
+  flex: 1;
   min-width: 240px;
 }
 
@@ -329,20 +333,94 @@ button {
   object-fit: contain;
 }
 
-.advisor-bubbles {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  width: 100%;
+.advisor-empty {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
 }
 
-.advisor-bubble {
+.advisor-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem 1.25rem;
+  width: 100%;
+  margin-top: 0.85rem;
+}
+
+.advisor-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
   background: var(--color-bubble-bg);
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  font-size: 0.95rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 28px;
+  padding: 1.4rem 1.2rem 1rem;
+  width: fit-content;
+  min-width: 128px;
+  box-sizing: border-box;
+}
+
+/* the label is never truncated — it drives the chip's width. Only the
+   value/detail rows (below) are allowed to shrink and ellipsize. */
+.advisor-chip-label {
+  margin-top: -2.1rem;
+  white-space: nowrap;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+.advisor-chip-value {
+  width: 0;
+  min-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: var(--color-text-primary);
-  line-height: 1.5;
+}
+
+.advisor-chip-detail {
+  width: 0;
+  min-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.advisor-ask {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.advisor-ask-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.advisor-ask-input {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+}
+
+.advisor-ask-answer {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
 }
 
 .chart-controls {

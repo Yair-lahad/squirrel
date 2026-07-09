@@ -1,5 +1,5 @@
 import { Scatter } from 'react-chartjs-2';
-import { formatCurrency } from '../../core/format';
+import { formatCurrency, formatDayMonth } from '../../core/format';
 import { PALETTE } from '../../core/palette';
 
 export default function CategoryScatterChart({ transactions }) {
@@ -34,7 +34,7 @@ export default function CategoryScatterChart({ transactions }) {
           title: () => '',
           label(ctx) {
             const p = ctx.raw;
-            return `${p.date} — ${p.description}: ${formatCurrency(Math.abs(p.amount))}`;
+            return `${formatDayMonth(p.date)} — ${p.description}: ${formatCurrency(Math.abs(p.amount))}`;
           },
         },
       },
@@ -44,7 +44,7 @@ export default function CategoryScatterChart({ transactions }) {
         type: 'linear',
         ticks: {
           color: PALETTE.muted,
-          callback: (value) => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+          callback: (value) => formatDayMonth(value),
         },
         grid: { color: PALETTE.grid },
       },
@@ -57,8 +57,10 @@ export default function CategoryScatterChart({ transactions }) {
   };
 
   return (
-    <div className="chart-canvas">
-      <Scatter data={data} options={options} />
+    <div className="chart-card">
+      <div className="chart-canvas">
+        <Scatter data={data} options={options} />
+      </div>
     </div>
   );
 }
