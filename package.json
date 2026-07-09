@@ -2,13 +2,13 @@
   "name": "squirrel",
   "version": "0.1.0",
   "description": "Personal money flow dashboard",
-  "main": "backend/server.js",
+  "main": "backend/main.js",
   "scripts": {
-    "dev:backend": "nodemon backend/server.js",
+    "dev:backend": "nodemon backend/main.js",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev": "concurrently -n backend,frontend -c blue,green \"npm:dev:backend\" \"npm:dev:frontend\"",
     "build": "npm --prefix frontend run build",
-    "start": "npm run build && node backend/server.js"
+    "start": "npm run build && node backend/main.js"
   },
   "dependencies": {
     "express": "^4.19.2",

@@ -23,7 +23,7 @@ const CATEGORY_EN = {
 };
 
 function getTransactions() {
-  const raw = fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'hebrew-sample.json'), 'utf8');
+  const raw = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'data', 'hebrew-sample.json'), 'utf8');
   const transactions = JSON.parse(raw);
   return transactions.map((t) => ({ ...t, category: CATEGORY_EN[t.category] || t.category }));
 }
