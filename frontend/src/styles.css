@@ -626,6 +626,31 @@ th:hover {
   word-break: break-word;
 }
 
+.category-chip-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.category-chip-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.1rem 0.3rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+
+.category-chip-actions button:hover {
+  color: var(--color-text-primary);
+}
+
+.category-chip-editing input {
+  width: 100%;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 .row-number-header {
   cursor: default;
 }

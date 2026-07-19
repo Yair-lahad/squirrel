@@ -25,3 +25,23 @@ export function applyCategoryRules(transactions) {
     body: JSON.stringify({ transactions }),
   }).then(parseJson);
 }
+
+export function fetchCategories() {
+  return fetch('/api/categories').then(parseJson);
+}
+
+export function renameCategory(id, name) {
+  return fetch(`/api/categories/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  }).then(parseJson);
+}
+
+export function deleteCategory(id) {
+  return fetch(`/api/categories/${id}`, { method: 'DELETE' }).then(async (res) => {
+    if (res.ok) return;
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to delete category');
+  });
+}

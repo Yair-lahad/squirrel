@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
-const { init: initDb } = require('./logic/categorization/db');
+const { init: initDb } = require('./db');
 const vendorRoute = require('./routes/vendor');
 const mockRoute = require('./routes/mock');
 const fileRoute = require('./routes/file');

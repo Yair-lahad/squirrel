@@ -19,6 +19,14 @@ async function init() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `);
 }
 
 module.exports = { pool, init };

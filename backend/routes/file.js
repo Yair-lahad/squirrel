@@ -1,12 +1,8 @@
 const express = require('express');
-const fileSource = require('../logic/sources/fileSource');
-const rulesStore = require('../logic/categorization/rulesStore');
-const { applyRules } = require('../logic/categorization/applyRules');
+const fileController = require('../controllers/fileController');
 
 const router = express.Router();
 
-router.get('/api/fetch/file', async (req, res) => {
-  res.json(applyRules(fileSource.getTransactions(), await rulesStore.listRules()));
-});
+router.get('/api/fetch/file', fileController.fetchFile);
 
 module.exports = router;

@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchRules, createRule, deleteRule, applyCategoryRules } from '../routes/categories';
+import {
+  fetchRules,
+  createRule,
+  deleteRule,
+  applyCategoryRules,
+  fetchCategories,
+  renameCategory,
+  deleteCategory,
+} from '../routes/categories';
 import CategorySelect from '../components/CategorySelect';
 import CategoryGrid from '../components/CategoryGrid';
 
@@ -11,8 +19,10 @@ const MATCH_TYPES = [
 
 export default function CategoriesPage({ transactions, onLoaded }) {
   const [rules, setRules] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({ pattern: '', matchType: 'contains', category: '' });
   const [status, setStatus] = useState({ message: '', error: false });
+  const [gridStatus, setGridStatus] = useState({ message: '', error: false });
   const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
@@ -23,14 +33,48 @@ export default function CategoriesPage({ transactions, onLoaded }) {
       // not just right after creating a rule, so stale categories don't linger.
       if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
     });
+    fetchCategories().then(setCategories);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const existingCategories = useMemo(() => {
-    const set = new Set(transactions.map((t) => t.category));
-    rules.forEach((r) => set.add(r.category));
-    return [...set].sort();
-  }, [transactions, rules]);
+  // A category only gets a DB row (and therefore an id/rename/delete controls)
+  // once it's been used in a rule — transaction-only or rule-only names still
+  // need to show up so they stay pickable in CategorySelect.
+  const categoryEntries = useMemo(() => {
+    const byName = new Map();
+    transactions.forEach((t) => t.category && byName.set(t.category, { name: t.category, id: null }));
+    rules.forEach((r) => !byName.has(r.category) && byName.set(r.category, { name: r.category, id: null }));
+    categories.forEach((c) => byName.set(c.name, { name: c.name, id: c.id }));
+    return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [transactions, rules, categories]);
+
+  const existingCategories = useMemo(() => categoryEntries.map((c) => c.name), [categoryEntries]);
+
+  async function refreshAfterCategoryChange() {
+    setRules(await fetchRules());
+    setCategories(await fetchCategories());
+    if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
+  }
+
+  async function handleRenameCategory(id, name) {
+    try {
+      await renameCategory(id, name);
+      setGridStatus({ message: '', error: false });
+      await refreshAfterCategoryChange();
+    } catch (err) {
+      setGridStatus({ message: err.message, error: true });
+    }
+  }
+
+  async function handleDeleteCategory(id) {
+    try {
+      await deleteCategory(id);
+      setGridStatus({ message: '', error: false });
+      await refreshAfterCategoryChange();
+    } catch (err) {
+      setGridStatus({ message: err.message, error: true });
+    }
+  }
 
   function update(key) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -52,6 +96,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
       setFormKey((k) => k + 1);
       setStatus({ message: '', error: false });
       setRules(await fetchRules());
+      setCategories(await fetchCategories());
       if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
     } catch (err) {
       setStatus({ message: err.message, error: true });
@@ -148,7 +193,12 @@ export default function CategoriesPage({ transactions, onLoaded }) {
         </table>
       </div>
 
-      <CategoryGrid categories={existingCategories} />
+      <CategoryGrid
+        categories={categoryEntries}
+        onRename={handleRenameCategory}
+        onDelete={handleDeleteCategory}
+      />
+      {gridStatus.message && <p className={`status${gridStatus.error ? ' error' : ''}`}>{gridStatus.message}</p>}
     </div>
   );
 }
