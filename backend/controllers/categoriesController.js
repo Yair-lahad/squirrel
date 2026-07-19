@@ -64,6 +64,14 @@ async function listCategories(req, res) {
   res.json(await categoryService.listCategories());
 }
 
+async function createCategory(req, res) {
+  const name = validateCategoryName(req.body, res);
+  if (!name) return;
+  const result = await categoryService.createCategory(name);
+  if (result.status === 'conflict') return res.status(409).json({ error: `A category named "${name}" already exists` });
+  res.status(201).json(result.category);
+}
+
 async function renameCategory(req, res) {
   const name = validateCategoryName(req.body, res);
   if (!name) return;
@@ -82,6 +90,17 @@ async function deleteCategory(req, res) {
   res.status(204).end();
 }
 
+async function setTitleOverride(req, res) {
+  const { description, title } = req.body || {};
+  if (!description || typeof description !== 'string') {
+    return res.status(400).json({ error: 'description is required' });
+  }
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return res.status(400).json({ error: 'title is required' });
+  }
+  res.json(await categoryService.setTitleOverride(description, title.trim()));
+}
+
 module.exports = {
   listRules,
   createRule,
@@ -89,6 +108,8 @@ module.exports = {
   deleteRule,
   applyRules: applyRulesEndpoint,
   listCategories,
+  createCategory,
   renameCategory,
   deleteCategory,
+  setTitleOverride,
 };

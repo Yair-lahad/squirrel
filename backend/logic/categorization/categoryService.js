@@ -8,6 +8,12 @@ async function ensureCategory(name) {
   await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [name]);
 }
 
+async function ensureCategories(names) {
+  const unique = [...new Set(names.filter(Boolean))];
+  if (!unique.length) return;
+  await pool.query('INSERT INTO categories (name) SELECT unnest($1::text[]) ON CONFLICT (name) DO NOTHING', [unique]);
+}
+
 async function listRules() {
   const { rows } = await pool.query(`SELECT ${RULE_COLUMNS} FROM category_rules ORDER BY id ASC`);
   return rows;
@@ -37,12 +43,43 @@ async function deleteRule(id) {
 }
 
 async function applyRulesTo(transactions) {
-  return applyRules(transactions, await listRules());
+  const categorized = applyRules(transactions, await listRules());
+  await ensureCategories(categorized.map((t) => t.category));
+  const overrides = await titleOverridesByDescription();
+  return categorized.map((t) => ({ ...t, title: overrides.get(t.description) || t.description }));
+}
+
+async function titleOverridesByDescription() {
+  const { rows } = await pool.query('SELECT description, title FROM title_overrides');
+  return new Map(rows.map((r) => [r.description, r.title]));
+}
+
+async function setTitleOverride(description, title) {
+  const { rows } = await pool.query(
+    `INSERT INTO title_overrides (description, title) VALUES ($1, $2)
+     ON CONFLICT (description) DO UPDATE SET title = $2, updated_at = now()
+     RETURNING description, title`,
+    [description, title]
+  );
+  return rows[0];
 }
 
 async function listCategories() {
   const { rows } = await pool.query(`SELECT ${CATEGORY_COLUMNS} FROM categories ORDER BY name ASC`);
   return rows;
+}
+
+async function createCategory(name) {
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO categories (name) VALUES ($1) RETURNING ${CATEGORY_COLUMNS}`,
+      [name]
+    );
+    return { status: 'ok', category: rows[0] };
+  } catch (err) {
+    if (err.code === '23505') return { status: 'conflict' };
+    throw err;
+  }
 }
 
 async function renameCategory(id, newName) {
@@ -94,6 +131,8 @@ module.exports = {
   deleteRule,
   applyRulesTo,
   listCategories,
+  createCategory,
   renameCategory,
   deleteCategory,
+  setTitleOverride,
 };

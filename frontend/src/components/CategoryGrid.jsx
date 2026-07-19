@@ -57,9 +57,10 @@ function CategoryChip({ category, onRename, onDelete }) {
           </button>
           <button
             type="button"
+            className="category-chip-delete"
             title="Delete category"
             onClick={() => {
-              if (window.confirm(`Delete category "${category.name}"?`)) onDelete(category.id);
+              if (window.confirm(`Delete category "${category.name}"?`)) onDelete(category);
             }}
           >
             🗑
@@ -75,7 +76,7 @@ export default function CategoryGrid({ categories, onRename, onDelete }) {
 
   return (
     <section className="category-grid-section">
-      <h2>Existing categories</h2>
+      <h2>Categories</h2>
       <div className="category-grid">
         {categories.map((category) => (
           <CategoryChip key={category.name} category={category} onRename={onRename} onDelete={onDelete} />

@@ -38,7 +38,7 @@ function getAdvice({ categories, transactions }) {
   insights.push({
     type: 'max',
     amount: Math.abs(biggest.amount),
-    description: biggest.description,
+    title: biggest.title,
     date: biggest.date,
   });
 

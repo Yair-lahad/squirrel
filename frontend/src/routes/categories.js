@@ -30,6 +30,14 @@ export function fetchCategories() {
   return fetch('/api/categories').then(parseJson);
 }
 
+export function createCategory(name) {
+  return fetch('/api/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  }).then(parseJson);
+}
+
 export function renameCategory(id, name) {
   return fetch(`/api/categories/${id}`, {
     method: 'PUT',
@@ -44,4 +52,12 @@ export function deleteCategory(id) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error || 'Failed to delete category');
   });
+}
+
+export function setTitleOverride(description, title) {
+  return fetch('/api/titles', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description, title }),
+  }).then(parseJson);
 }

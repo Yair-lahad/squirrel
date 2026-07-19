@@ -7,7 +7,7 @@ export default function CategoryScatterChart({ transactions }) {
     x: new Date(t.date).getTime(),
     y: Math.abs(t.amount),
     date: t.date,
-    description: t.description,
+    title: t.title,
     amount: t.amount,
   }));
 
@@ -32,7 +32,7 @@ export default function CategoryScatterChart({ transactions }) {
       tooltip: {
         callbacks: {
           title(items) {
-            return items[0].raw.description;
+            return items[0].raw.title;
           },
           label(ctx) {
             const p = ctx.raw;

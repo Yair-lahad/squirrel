@@ -5,6 +5,7 @@ import {
   deleteRule,
   applyCategoryRules,
   fetchCategories,
+  createCategory,
   renameCategory,
   deleteCategory,
 } from '../routes/categories';
@@ -24,6 +25,8 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   const [status, setStatus] = useState({ message: '', error: false });
   const [gridStatus, setGridStatus] = useState({ message: '', error: false });
   const [formKey, setFormKey] = useState(0);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   useEffect(() => {
     fetchRules().then(async (latestRules) => {
@@ -31,9 +34,12 @@ export default function CategoriesPage({ transactions, onLoaded }) {
       // Rules may have been created in a previous visit/session, after the
       // currently cached transactions were fetched — resync on every visit,
       // not just right after creating a rule, so stale categories don't linger.
+      // Applying rules also registers every category seen into the DB catalog,
+      // so fetch the catalog again afterward to pick up anything just added.
       if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
+      setCategories(await fetchCategories());
     });
-    fetchCategories().then(setCategories);
+    if (!transactions.length) fetchCategories().then(setCategories);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -66,9 +72,42 @@ export default function CategoriesPage({ transactions, onLoaded }) {
     }
   }
 
-  async function handleDeleteCategory(id) {
+  async function handleDeleteCategory(category) {
+    // The backend can only see rule usage — it has no idea whether currently
+    // loaded transactions still carry this category (they're never persisted
+    // server-side). Deleting one of those would "succeed" but get silently
+    // re-created the next time rules are applied to those same transactions,
+    // so check client-side first and never call the API for that case —
+    // otherwise the buttons flash away and come back on refresh.
+    const usedByLoadedTransactions = transactions.filter((t) => t.category === category.name).length;
+    if (usedByLoadedTransactions > 0) {
+      setGridStatus({
+        message: `"${category.name}" is used by ${usedByLoadedTransactions} loaded transaction(s) — it can't be deleted while they're loaded.`,
+        error: true,
+      });
+      return;
+    }
     try {
-      await deleteCategory(id);
+      await deleteCategory(category.id);
+      setGridStatus({ message: '', error: false });
+      await refreshAfterCategoryChange();
+    } catch (err) {
+      setGridStatus({ message: err.message, error: true });
+    }
+  }
+
+  function cancelAddCategory() {
+    setAddingCategory(false);
+    setNewCategoryName('');
+  }
+
+  async function handleCreateCategory(e) {
+    e.preventDefault();
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    try {
+      await createCategory(trimmed);
+      cancelAddCategory();
       setGridStatus({ message: '', error: false });
       await refreshAfterCategoryChange();
     } catch (err) {
@@ -110,6 +149,36 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
   return (
     <div className="categories-page">
+      <div className="category-add">
+        {addingCategory ? (
+          <form onSubmit={handleCreateCategory} className="category-add-form">
+            <input
+              autoFocus
+              autoComplete="off"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="New category name"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') cancelAddCategory();
+              }}
+            />
+            <button type="submit">Add</button>
+            <button type="button" onClick={cancelAddCategory}>Cancel</button>
+          </form>
+        ) : (
+          <button type="button" className="category-add-button" onClick={() => setAddingCategory(true)}>
+            + New category
+          </button>
+        )}
+      </div>
+
+      <CategoryGrid
+        categories={categoryEntries}
+        onRename={handleRenameCategory}
+        onDelete={handleDeleteCategory}
+      />
+      {gridStatus.message && <p className={`status${gridStatus.error ? ' error' : ''}`}>{gridStatus.message}</p>}
+
       <section id="rule-form-panel">
         <form onSubmit={handleSubmit}>
           <h2>Add a category rule</h2>
@@ -192,13 +261,6 @@ export default function CategoriesPage({ transactions, onLoaded }) {
           </tbody>
         </table>
       </div>
-
-      <CategoryGrid
-        categories={categoryEntries}
-        onRename={handleRenameCategory}
-        onDelete={handleDeleteCategory}
-      />
-      {gridStatus.message && <p className={`status${gridStatus.error ? ' error' : ''}`}>{gridStatus.message}</p>}
     </div>
   );
 }

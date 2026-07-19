@@ -27,6 +27,14 @@ async function init() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS title_overrides (
+      description TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `);
 }
 
 module.exports = { pool, init };

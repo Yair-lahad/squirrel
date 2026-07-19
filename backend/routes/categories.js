@@ -10,7 +10,10 @@ router.delete('/api/categories/rules/:id', categoriesController.deleteRule);
 router.post('/api/categories/apply', categoriesController.applyRules);
 
 router.get('/api/categories', categoriesController.listCategories);
+router.post('/api/categories', categoriesController.createCategory);
 router.put('/api/categories/:id', categoriesController.renameCategory);
 router.delete('/api/categories/:id', categoriesController.deleteCategory);
+
+router.put('/api/titles', categoriesController.setTitleOverride);
 
 module.exports = router;
