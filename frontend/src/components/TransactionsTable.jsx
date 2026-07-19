@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchSortedTransactions } from '../routes/analytics';
-import { createRule, applyCategoryRules, setTitleOverride, fetchCategories } from '../routes/categories';
+import { createRule, applyCategoryRules, fetchCategories } from '../routes/categories';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { formatCurrency } from '../core/format';
 import CategorySelect from './CategorySelect';
@@ -13,13 +13,47 @@ const COLUMNS = [
   { key: 'amount', label: 'Amount' },
 ];
 
+// Once = a single-use rule tied to this one transaction's real id (never
+// reoccurs, since a future fetch's transactions have different ids). Always
+// = today's recurring rule, matched by description.
+function ScopeToggle({ scope, onChange }) {
+  return (
+    <span className="scope-toggle">
+      <button
+        type="button"
+        className={scope === 'once' ? 'active' : ''}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => onChange('once')}
+      >
+        Once
+      </button>
+      <button
+        type="button"
+        className={scope === 'always' ? 'active' : ''}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => onChange('always')}
+      >
+        Always
+      </button>
+    </span>
+  );
+}
+
+function ruleForEdit(attribute, scope, t, value) {
+  return scope === 'always'
+    ? { attribute, matchType: 'exact', pattern: t.description, value }
+    : { attribute, matchType: 'transaction', transactionId: t.id, value };
+}
+
 export default function TransactionsTable({ transactions, onTransactionsChange }) {
   const [sortKey, setSortKey] = useState('date');
   const [sortAsc, setSortAsc] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [categoryEditScope, setCategoryEditScope] = useState('once');
   const [editingTitleRow, setEditingTitleRow] = useState(null);
   const [titleEditValue, setTitleEditValue] = useState('');
+  const [titleEditScope, setTitleEditScope] = useState('once');
   const [catalogCategories, setCatalogCategories] = useState([]);
 
   useEffect(() => {
@@ -48,26 +82,28 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   function startEdit(t, i) {
     setEditingRow(i);
     setEditValue(t.category);
+    setCategoryEditScope('once');
   }
 
   async function saveEdit(t, category) {
     const trimmed = category.trim();
     setEditingRow(null);
     if (!trimmed || trimmed === t.category) return;
-    await createRule({ pattern: t.description, matchType: 'exact', category: trimmed });
+    await createRule(ruleForEdit('category', categoryEditScope, t, trimmed));
     onTransactionsChange?.(await applyCategoryRules(transactions));
   }
 
   function startEditTitle(t, i) {
     setEditingTitleRow(i);
     setTitleEditValue(t.title);
+    setTitleEditScope('once');
   }
 
   async function saveTitleEdit(t) {
     const trimmed = titleEditValue.trim();
     setEditingTitleRow(null);
     if (!trimmed || trimmed === t.title) return;
-    await setTitleOverride(t.description, trimmed);
+    await createRule(ruleForEdit('title', titleEditScope, t, trimmed));
     onTransactionsChange?.(await applyCategoryRules(transactions));
   }
 
@@ -105,16 +141,19 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
                   }}
                 >
                   {editingTitle ? (
-                    <input
-                      autoFocus
-                      autoComplete="off"
-                      value={titleEditValue}
-                      onChange={(e) => setTitleEditValue(e.target.value)}
-                      onBlur={() => saveTitleEdit(t)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') e.target.blur();
-                      }}
-                    />
+                    <span className="cell-editing">
+                      <input
+                        autoFocus
+                        autoComplete="off"
+                        value={titleEditValue}
+                        onChange={(e) => setTitleEditValue(e.target.value)}
+                        onBlur={() => saveTitleEdit(t)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') e.target.blur();
+                        }}
+                      />
+                      <ScopeToggle scope={titleEditScope} onChange={setTitleEditScope} />
+                    </span>
                   ) : (
                     <span onClick={() => startEditTitle(t, i)} title="Click to edit title">
                       {t.title}
@@ -129,12 +168,15 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
                   }}
                 >
                   {editing ? (
-                    <CategorySelect
-                      value={editValue}
-                      categories={existingCategories}
-                      onChange={setEditValue}
-                      onCommit={(category) => saveEdit(t, category)}
-                    />
+                    <span className="cell-editing">
+                      <CategorySelect
+                        value={editValue}
+                        categories={existingCategories}
+                        onChange={setEditValue}
+                        onCommit={(category) => saveEdit(t, category)}
+                      />
+                      <ScopeToggle scope={categoryEditScope} onChange={setCategoryEditScope} />
+                    </span>
                   ) : (
                     <span onClick={() => startEdit(t, i)} title="Click to assign a category">
                       {t.category}

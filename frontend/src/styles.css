@@ -582,6 +582,33 @@ th:hover {
   width: 100%;
 }
 
+.cell-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.scope-toggle {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.scope-toggle button {
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.scope-toggle button.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
 .category-select-creating {
   display: inline-flex;
   align-items: center;

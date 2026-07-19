@@ -12,16 +12,22 @@ import {
 import CategorySelect from '../components/CategorySelect';
 import CategoryGrid from '../components/CategoryGrid';
 
-const MATCH_TYPES = [
-  { value: 'contains', label: 'Contains (auto - any matching transaction, including future ones)' },
-  { value: 'exact', label: 'Exact (manual - this one description only)' },
-  { value: 'category', label: 'Category (merge every transaction currently in this category)' },
-];
+const MATCH_TYPES_BY_ATTRIBUTE = {
+  category: [
+    { value: 'contains', label: 'Contains (auto - any matching transaction, including future ones)' },
+    { value: 'exact', label: 'Exact (manual - this one description only)' },
+    { value: 'category', label: 'Merge (merge every transaction currently in this category)' },
+  ],
+  title: [
+    { value: 'contains', label: 'Contains (auto - any matching transaction, including future ones)' },
+    { value: 'exact', label: 'Exact (manual - this one description only)' },
+  ],
+};
 
 export default function CategoriesPage({ transactions, onLoaded }) {
   const [rules, setRules] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ pattern: '', matchType: 'contains', category: '' });
+  const [form, setForm] = useState({ attribute: 'category', matchType: 'contains', pattern: '', value: '' });
   const [status, setStatus] = useState({ message: '', error: false });
   const [gridStatus, setGridStatus] = useState({ message: '', error: false });
   const [formKey, setFormKey] = useState(0);
@@ -45,11 +51,14 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
   // A category only gets a DB row (and therefore an id/rename/delete controls)
   // once it's been used in a rule — transaction-only or rule-only names still
-  // need to show up so they stay pickable in CategorySelect.
+  // need to show up so they stay pickable in CategorySelect. Only category
+  // rules contribute here — a title rule's value is a title, not a category.
   const categoryEntries = useMemo(() => {
     const byName = new Map();
     transactions.forEach((t) => t.category && byName.set(t.category, { name: t.category, id: null }));
-    rules.forEach((r) => !byName.has(r.category) && byName.set(r.category, { name: r.category, id: null }));
+    rules
+      .filter((r) => r.attribute === 'category')
+      .forEach((r) => !byName.has(r.value) && byName.set(r.value, { name: r.value, id: null }));
     categories.forEach((c) => byName.set(c.name, { name: c.name, id: c.id }));
     return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
   }, [transactions, rules, categories]);
@@ -119,19 +128,25 @@ export default function CategoriesPage({ transactions, onLoaded }) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
   }
 
+  function updateAttribute(e) {
+    const attribute = e.target.value;
+    setForm({ attribute, matchType: 'contains', pattern: '', value: '' });
+    setFormKey((k) => k + 1);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.pattern.trim()) {
       setStatus({ message: form.matchType === 'category' ? 'Source category is required' : 'Match text is required', error: true });
       return;
     }
-    if (!form.category.trim()) {
-      setStatus({ message: 'Category is required', error: true });
+    if (!form.value.trim()) {
+      setStatus({ message: form.attribute === 'category' ? 'Category is required' : 'Title is required', error: true });
       return;
     }
     try {
       await createRule(form);
-      setForm({ pattern: '', matchType: 'contains', category: '' });
+      setForm({ attribute: form.attribute, matchType: 'contains', pattern: '', value: '' });
       setFormKey((k) => k + 1);
       setStatus({ message: '', error: false });
       setRules(await fetchRules());
@@ -181,7 +196,14 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
       <section id="rule-form-panel">
         <form onSubmit={handleSubmit}>
-          <h2>Add a category rule</h2>
+          <h2>Add a rule</h2>
+          <div className="form-row">
+            <label htmlFor="attribute">Sets</label>
+            <select id="attribute" value={form.attribute} onChange={updateAttribute}>
+              <option value="category">Category</option>
+              <option value="title">Title</option>
+            </select>
+          </div>
           <div className="form-row">
             <label htmlFor="matchType">Match type</label>
             <select
@@ -189,7 +211,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
               value={form.matchType}
               onChange={(e) => setForm((f) => ({ ...f, matchType: e.target.value, pattern: '' }))}
             >
-              {MATCH_TYPES.map((m) => (
+              {MATCH_TYPES_BY_ATTRIBUTE[form.attribute].map((m) => (
                 <option key={m.value} value={m.value}>{m.label}</option>
               ))}
             </select>
@@ -216,14 +238,25 @@ export default function CategoriesPage({ transactions, onLoaded }) {
             )}
           </div>
           <div className="form-row">
-            <label htmlFor="category">Category</label>
-            <CategorySelect
-              key={formKey}
-              id="category"
-              value={form.category}
-              categories={existingCategories}
-              onChange={(category) => setForm((f) => ({ ...f, category }))}
-            />
+            <label htmlFor="value">{form.attribute === 'category' ? 'Category' : 'Title'}</label>
+            {form.attribute === 'category' ? (
+              <CategorySelect
+                key={formKey}
+                id="value"
+                value={form.value}
+                categories={existingCategories}
+                onChange={(value) => setForm((f) => ({ ...f, value }))}
+              />
+            ) : (
+              <input
+                id="value"
+                required
+                autoComplete="off"
+                value={form.value}
+                onChange={update('value')}
+                placeholder="e.g. Netflix subscription"
+              />
+            )}
           </div>
           <div className="form-actions">
             <button type="submit">Add rule</button>
@@ -236,18 +269,20 @@ export default function CategoriesPage({ transactions, onLoaded }) {
         <table>
           <thead>
             <tr>
+              <th>Sets</th>
               <th>Match text</th>
               <th>Type</th>
-              <th>Category</th>
+              <th>Value</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {rules.map((r) => (
               <tr key={r.id}>
-                <td>{r.pattern}</td>
-                <td>{r.matchType}</td>
-                <td>{r.category}</td>
+                <td>{r.attribute}</td>
+                <td>{r.pattern ?? `this transaction (#${r.transactionId})`}</td>
+                <td>{r.matchType === 'transaction' ? 'single-use' : r.matchType}</td>
+                <td>{r.value}</td>
                 <td>
                   <button type="button" onClick={() => handleDelete(r.id)}>Delete</button>
                 </td>
@@ -255,7 +290,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
             ))}
             {!rules.length && (
               <tr>
-                <td colSpan={4}>No rules yet — transactions keep their source category until you add one.</td>
+                <td colSpan={5}>No rules yet — transactions keep their source category until you add one.</td>
               </tr>
             )}
           </tbody>

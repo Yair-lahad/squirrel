@@ -14,6 +14,4 @@ router.post('/api/categories', categoriesController.createCategory);
 router.put('/api/categories/:id', categoriesController.renameCategory);
 router.delete('/api/categories/:id', categoriesController.deleteCategory);
 
-router.put('/api/titles', categoriesController.setTitleOverride);
-
 module.exports = router;

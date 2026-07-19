@@ -53,11 +53,3 @@ export function deleteCategory(id) {
     throw new Error(data.error || 'Failed to delete category');
   });
 }
-
-export function setTitleOverride(description, title) {
-  return fetch('/api/titles', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ description, title }),
-  }).then(parseJson);
-}
