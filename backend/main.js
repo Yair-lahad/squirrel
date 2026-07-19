@@ -1,5 +1,8 @@
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
+const { init: initDb } = require('./logic/categorization/db');
 const vendorRoute = require('./routes/vendor');
 const mockRoute = require('./routes/mock');
 const fileRoute = require('./routes/file');
@@ -26,6 +29,8 @@ app.get(/^(?!\/api).*/, (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Squirrel running at http://localhost:${PORT}`);
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Squirrel running at http://localhost:${PORT}`);
+  });
 });

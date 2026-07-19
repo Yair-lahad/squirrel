@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Personal money flow dashboard",
   "main": "backend/main.js",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
     "dev:backend": "nodemon backend/main.js",
     "dev:frontend": "npm --prefix frontend run dev",
@@ -11,9 +14,10 @@
     "start": "npm run build && node backend/main.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.3.0",
+    "dotenv": "^17.4.2",
     "express": "^4.19.2",
-    "israeli-bank-scrapers": "^6.8.0"
+    "israeli-bank-scrapers": "^6.8.0",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

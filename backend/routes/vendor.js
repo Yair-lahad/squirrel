@@ -14,7 +14,7 @@ router.post('/api/fetch/vendor', async (req, res) => {
 
   try {
     const transactions = await vendorSource.fetchTransactions({ id, password, card6Digits, startDate });
-    res.json(applyRules(transactions, rulesStore.listRules()));
+    res.json(applyRules(transactions, await rulesStore.listRules()));
   } catch (err) {
     res.status(502).json({ error: err.message || 'Fetch failed' });
   }

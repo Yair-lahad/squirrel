@@ -5,8 +5,8 @@ const { applyRules } = require('../logic/categorization/applyRules');
 
 const router = express.Router();
 
-router.get('/api/fetch/file', (req, res) => {
-  res.json(applyRules(fileSource.getTransactions(), rulesStore.listRules()));
+router.get('/api/fetch/file', async (req, res) => {
+  res.json(applyRules(fileSource.getTransactions(), await rulesStore.listRules()));
 });
 
 module.exports = router;

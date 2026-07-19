@@ -23,36 +23,36 @@ function validateRuleBody(body, res) {
   return { pattern, matchType, category };
 }
 
-router.get('/api/categories/rules', (req, res) => {
-  res.json(rulesStore.listRules());
+router.get('/api/categories/rules', async (req, res) => {
+  res.json(await rulesStore.listRules());
 });
 
-router.post('/api/categories/rules', (req, res) => {
+router.post('/api/categories/rules', async (req, res) => {
   const rule = validateRuleBody(req.body, res);
   if (!rule) return;
-  res.status(201).json(rulesStore.createRule(rule));
+  res.status(201).json(await rulesStore.createRule(rule));
 });
 
-router.put('/api/categories/rules/:id', (req, res) => {
+router.put('/api/categories/rules/:id', async (req, res) => {
   const rule = validateRuleBody(req.body, res);
   if (!rule) return;
-  const updated = rulesStore.updateRule(Number(req.params.id), rule);
+  const updated = await rulesStore.updateRule(Number(req.params.id), rule);
   if (!updated) return res.status(404).json({ error: 'rule not found' });
   res.json(updated);
 });
 
-router.delete('/api/categories/rules/:id', (req, res) => {
-  const deleted = rulesStore.deleteRule(Number(req.params.id));
+router.delete('/api/categories/rules/:id', async (req, res) => {
+  const deleted = await rulesStore.deleteRule(Number(req.params.id));
   if (!deleted) return res.status(404).json({ error: 'rule not found' });
   res.status(204).end();
 });
 
-router.post('/api/categories/apply', (req, res) => {
+router.post('/api/categories/apply', async (req, res) => {
   const { transactions } = req.body || {};
   if (!Array.isArray(transactions)) {
     return res.status(400).json({ error: 'transactions array is required' });
   }
-  res.json(applyRules(transactions, rulesStore.listRules()));
+  res.json(applyRules(transactions, await rulesStore.listRules()));
 });
 
 module.exports = router;

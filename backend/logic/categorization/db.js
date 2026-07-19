@@ -1,37 +1,24 @@
-const Database = require('better-sqlite3');
-const path = require('path');
+const { Pool } = require('pg');
 
-const db = new Database(path.join(__dirname, '..', '..', '..', 'data', 'categories.db'));
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not set (add it to .env)');
+}
 
-// matchType is validated at the route layer (backend/routes/categories.js) —
-// no CHECK constraint here, so adding a new match type never needs a schema
-// migration. Rebuild once for any table created before this change, which did
-// have a CHECK baking in the old ('contains', 'exact') set.
-const existing = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'category_rules'").get();
-if (existing && existing.sql.includes('CHECK')) {
-  db.exec(`
-    ALTER TABLE category_rules RENAME TO category_rules_old;
-    CREATE TABLE category_rules (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      pattern TEXT NOT NULL,
-      matchType TEXT NOT NULL,
-      category TEXT NOT NULL,
-      createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    INSERT INTO category_rules (id, pattern, matchType, category, createdAt)
-      SELECT id, pattern, matchType, category, createdAt FROM category_rules_old;
-    DROP TABLE category_rules_old;
-  `);
-} else {
-  db.exec(`
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+async function init() {
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS category_rules (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       pattern TEXT NOT NULL,
-      matchType TEXT NOT NULL,
+      match_type TEXT NOT NULL,
       category TEXT NOT NULL,
-      createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `);
 }
 
-module.exports = db;
+module.exports = { pool, init };
