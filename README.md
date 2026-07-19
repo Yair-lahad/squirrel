@@ -38,8 +38,8 @@ dataset (kept in `sessionStorage`, cleared when the tab closes).
 ### Category rules
 
 Raw transaction data (vendor scrape, sample files) is never modified. Instead,
-`data/categories.db` — a local SQLite file, no server or Docker needed — holds
-a small table of rules that get layered on top of every fetch:
+a `category_rules` table in Postgres (hosted on Supabase — see Run below)
+holds a small table of rules that get layered on top of every fetch:
 
 - **contains** — any transaction whose description contains the pattern gets
   the rule's category (auto, matches future transactions too).
@@ -49,18 +49,24 @@ a small table of rules that get layered on top of every fetch:
   category B (e.g. merge "Delicatessen" into "Dining").
 
 Unlike the transaction data itself, rules persist across reloads and sessions
-until deleted from the Categories page.
+until deleted from the Categories page — and since they live in Supabase
+rather than a local file, the same rules are shared across every machine you
+run the app from.
 
 ## Run
 
+Copy `.env.example` to `.env` and fill in `DATABASE_URL` with your Supabase
+connection string (Project → Connect → **Transaction pooler** — the direct
+connection is IPv6-only and won't resolve on most networks).
+
 ```bash
 npm install
-cd frontend && npm install && cd ..
 npm start
 ```
 
 Open http://localhost:3000. (`npm start` builds the frontend and serves it
-from the Express server.)
+from the Express server. `npm install` covers both backend and frontend —
+they're set up as npm workspaces.)
 
 For active development, with auto-restart/reload on every change:
 
@@ -76,7 +82,7 @@ developing.
 
 ```
 squirrel/
-├── data/                   # sample-data.json, hebrew-sample.json, categories.db (rules, gitignored)
+├── data/                   # sample-data.json, hebrew-sample.json (gitignored)
 ├── backend/
 │   ├── main.js            # Express app: mounts routes/, serves frontend/dist
 │   ├── routes/             # thin HTTP handlers
