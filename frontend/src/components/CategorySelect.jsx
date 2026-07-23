@@ -28,7 +28,13 @@ export default function CategorySelect({ id, value, categories, onChange, onComm
           placeholder="New category name"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onBlur={() => onCommit?.(value)}
+          onBlur={(e) => {
+            if (e.relatedTarget?.closest('.scope-toggle')) {
+              e.target.focus();
+              return;
+            }
+            onCommit?.(value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.target.blur();
             if (e.key === 'Escape') {

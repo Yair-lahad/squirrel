@@ -7,6 +7,7 @@ router.get('/api/categories/rules', categoriesController.listRules);
 router.post('/api/categories/rules', categoriesController.createRule);
 router.put('/api/categories/rules/:id', categoriesController.updateRule);
 router.delete('/api/categories/rules/:id', categoriesController.deleteRule);
+router.post('/api/categories/rules/:id/promote', categoriesController.promoteRule);
 router.post('/api/categories/apply', categoriesController.applyRules);
 
 router.get('/api/categories', categoriesController.listCategories);

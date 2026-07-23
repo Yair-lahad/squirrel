@@ -68,6 +68,14 @@ async function deleteRule(req, res) {
   res.status(204).end();
 }
 
+async function promoteRule(req, res) {
+  const result = await ruleService.promoteRuleToAlways(Number(req.params.id));
+  if (result.status === 'not_found') return res.status(404).json({ error: 'rule not found' });
+  if (result.status === 'not_once') return res.status(400).json({ error: 'only a Once rule can be promoted to Always' });
+  if (result.status === 'transaction_missing') return res.status(409).json({ error: 'the original transaction no longer exists' });
+  res.json(result.rule);
+}
+
 async function applyRulesEndpoint(req, res) {
   const { transactions } = req.body || {};
   if (!Array.isArray(transactions)) {
@@ -111,6 +119,7 @@ module.exports = {
   createRule,
   updateRule,
   deleteRule,
+  promoteRule,
   applyRules: applyRulesEndpoint,
   listCategories,
   createCategory,

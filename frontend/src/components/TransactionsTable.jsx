@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchSortedTransactions } from '../routes/analytics';
 import { createRule, applyCategoryRules, fetchCategories } from '../routes/categories';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { usePagination } from '../hooks/usePagination';
 import { formatCurrency } from '../core/format';
 import CategorySelect from './CategorySelect';
+import Pagination from './Pagination';
 
 const COLUMNS = [
   { key: 'date', label: 'Date' },
@@ -50,10 +52,10 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   const [sortAsc, setSortAsc] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [editValue, setEditValue] = useState('');
-  const [categoryEditScope, setCategoryEditScope] = useState('once');
+  const [categoryEditScope, setCategoryEditScope] = useState('always');
   const [editingTitleRow, setEditingTitleRow] = useState(null);
   const [titleEditValue, setTitleEditValue] = useState('');
-  const [titleEditScope, setTitleEditScope] = useState('once');
+  const [titleEditScope, setTitleEditScope] = useState('always');
   const [catalogCategories, setCatalogCategories] = useState([]);
 
   useEffect(() => {
@@ -73,6 +75,8 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
     [transactions, sortKey, sortAsc]
   );
 
+  const { pageSize, setPageSize, page: currentPage, setPage, pageCount, pageStart, paginated } = usePagination(sorted);
+
   const existingCategories = useMemo(() => {
     const set = new Set(transactions.map((t) => t.category));
     catalogCategories.forEach((name) => set.add(name));
@@ -82,7 +86,7 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   function startEdit(t, i) {
     setEditingRow(i);
     setEditValue(t.category);
-    setCategoryEditScope('once');
+    setCategoryEditScope('always');
   }
 
   async function saveEdit(t, category) {
@@ -96,14 +100,18 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   function startEditTitle(t, i) {
     setEditingTitleRow(i);
     setTitleEditValue(t.title);
-    setTitleEditScope('once');
+    setTitleEditScope('always');
   }
 
-  async function saveTitleEdit(t) {
+  // Scope is passed explicitly rather than read from titleEditScope state —
+  // this fires directly from the toggle's onClick, so it must use the scope
+  // being clicked right now, not whatever state happens to have committed by
+  // the time this runs (that race is what caused stale/duplicate rules).
+  async function saveTitleEdit(t, scope) {
     const trimmed = titleEditValue.trim();
     setEditingTitleRow(null);
     if (!trimmed || trimmed === t.title) return;
-    await createRule(ruleForEdit('title', titleEditScope, t, trimmed));
+    await createRule(ruleForEdit('title', scope, t, trimmed));
     onTransactionsChange?.(await applyCategoryRules(transactions));
   }
 
@@ -126,7 +134,8 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
           </tr>
         </thead>
         <tbody>
-          {sorted.map((t, i) => {
+          {paginated.map((t, localI) => {
+            const i = pageStart + localI;
             const isIncome = t.amount > 0;
             const editing = editingRow === i;
             const editingTitle = editingTitleRow === i;
@@ -147,12 +156,21 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
                         autoComplete="off"
                         value={titleEditValue}
                         onChange={(e) => setTitleEditValue(e.target.value)}
-                        onBlur={() => saveTitleEdit(t)}
+                        onBlur={(e) => {
+                          if (e.relatedTarget?.closest('.scope-toggle')) return;
+                          saveTitleEdit(t, titleEditScope);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') e.target.blur();
                         }}
                       />
-                      <ScopeToggle scope={titleEditScope} onChange={setTitleEditScope} />
+                      <ScopeToggle
+                        scope={titleEditScope}
+                        onChange={(scope) => {
+                          setTitleEditScope(scope);
+                          saveTitleEdit(t, scope);
+                        }}
+                      />
                     </span>
                   ) : (
                     <span onClick={() => startEditTitle(t, i)} title="Click to edit title">
@@ -192,6 +210,13 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
           })}
         </tbody>
       </table>
+      <Pagination
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        page={currentPage}
+        onPageChange={setPage}
+        pageCount={pageCount}
+      />
     </div>
   );
 }

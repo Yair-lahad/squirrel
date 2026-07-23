@@ -1,73 +1,100 @@
-const { pool } = require('../../db');
+const repo = require('./ruleRepository');
 
-const RULE_COLUMNS = `id, attribute, pattern, match_type AS "matchType", transaction_id AS "transactionId", value, created_at AS "createdAt"`;
-const CATEGORY_COLUMNS = `id, name, created_at AS "createdAt"`;
-
-async function ensureCategory(name) {
-  await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [name]);
-}
-
-async function ensureCategories(names) {
-  const unique = [...new Set(names.filter(Boolean))];
-  if (!unique.length) return;
-  await pool.query('INSERT INTO categories (name) SELECT unnest($1::text[]) ON CONFLICT (name) DO NOTHING', [unique]);
-}
-
-async function listRules() {
-  const { rows } = await pool.query(`SELECT ${RULE_COLUMNS} FROM rules ORDER BY id ASC`);
-  return rows;
-}
-
+// Only one "Once" rule can ever make sense for a given transaction+attribute
+// — re-editing the same row with "Once" should replace that rule, not stack
+// a second one on top of it (which left the older one winning, since
+// resolution used to just take the first match by id order).
 async function createRule({ attribute, matchType, pattern, transactionId, value }) {
-  if (attribute === 'category') await ensureCategory(value);
-  const { rows } = await pool.query(
-    `INSERT INTO rules (attribute, match_type, pattern, transaction_id, value) VALUES ($1, $2, $3, $4, $5) RETURNING ${RULE_COLUMNS}`,
-    [attribute, matchType, pattern || null, transactionId || null, value]
-  );
-  return rows[0];
+  if (attribute === 'category') await repo.ensureCategory(value);
+  if (matchType === 'transaction') await repo.deleteTransactionRule(attribute, transactionId);
+  return repo.insertRule({ attribute, matchType, pattern, transactionId, value });
 }
 
 async function updateRule(id, { attribute, matchType, pattern, transactionId, value }) {
-  if (attribute === 'category') await ensureCategory(value);
-  const { rows } = await pool.query(
-    `UPDATE rules SET attribute = $1, match_type = $2, pattern = $3, transaction_id = $4, value = $5 WHERE id = $6 RETURNING ${RULE_COLUMNS}`,
-    [attribute, matchType, pattern || null, transactionId || null, value, id]
-  );
-  return rows[0] || null;
+  if (attribute === 'category') await repo.ensureCategory(value);
+  return repo.updateRuleRow(id, { attribute, matchType, pattern, transactionId, value });
 }
 
 async function deleteRule(id) {
-  const { rowCount } = await pool.query('DELETE FROM rules WHERE id = $1', [id]);
-  return rowCount > 0;
+  return repo.deleteRuleRow(id);
 }
 
-// Rule matching — a `transaction`-matchType rule (single-use, keyed by the
-// transaction's real id) always wins over description-based rules for that
-// attribute; `contains`/`exact` decide it otherwise (exact beats contains);
-// a `category`-matchType rule (merge one category into another) then remaps
-// on top of whatever category was just resolved, same as before.
+// Once -> Always: reuse the pattern the transaction already matched. Looked
+// up straight from the DB so this works regardless of which upload the
+// frontend currently has loaded.
+async function promoteRuleToAlways(id) {
+  const rule = await repo.getRuleById(id);
+  if (!rule) return { status: 'not_found' };
+  if (rule.matchType !== 'transaction') return { status: 'not_once' };
+  const description = await repo.getTransactionDescription(rule.transactionId);
+  if (description == null) return { status: 'transaction_missing' };
+  const updated = await repo.updateRuleRow(id, {
+    attribute: rule.attribute,
+    matchType: 'exact',
+    pattern: description,
+    transactionId: null,
+    value: rule.value,
+  });
+  return { status: 'ok', rule: updated };
+}
+
+// Scraped bank data (israeli-bank-scrapers, Hebrew descriptions especially)
+// routinely embeds invisible characters — RTL/bidi control marks, BOM,
+// non-breaking spaces — that look identical on screen but break a plain
+// substring match, since a pattern typed by hand won't contain them. Strip
+// those and collapse whitespace before comparing, on both sides.
+// Zero-width spaces/joiners (U+200B-200D), bidi marks/embeddings/overrides
+// (U+200E-200F, U+202A-202E, U+2066-2069), and a stray BOM (U+FEFF). Written
+// as \\u escapes rather than literal characters so the pattern stays legible
+// (and correct) in any editor/encoding.
+const INVISIBLE_CHARS = /[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g;
+
+function normalizeForMatch(text) {
+  return (text || '')
+    .normalize('NFC')
+    .replace(INVISIBLE_CHARS, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+// Rule matching — among every exact/contains rule that matches this
+// description, the most recently created one wins (same recency principle
+// as once-vs-always below): an old `exact` rule doesn't get to permanently
+// outrank a `contains` rule you set up afterward just because "exact beats
+// contains" used to be a fixed priority instead of a tiebreaker.
 function findDescriptionMatch(description, rules) {
-  const desc = (description || '').toLowerCase();
-  const exact = rules.filter((r) => r.matchType === 'exact');
-  const contains = rules.filter((r) => r.matchType === 'contains');
-
-  const exactHit = exact.find((r) => desc === (r.pattern || '').toLowerCase());
-  if (exactHit) return exactHit;
-
-  return contains.find((r) => desc.includes((r.pattern || '').toLowerCase()));
+  const desc = normalizeForMatch(description);
+  const matches = rules.filter((r) => {
+    const pattern = normalizeForMatch(r.pattern);
+    return r.matchType === 'exact' ? desc === pattern : desc.includes(pattern);
+  });
+  return matches.reduce((latest, r) => (!latest || new Date(r.createdAt) > new Date(latest.createdAt) ? r : latest), null);
 }
 
 function findCategoryMerge(category, rules) {
-  const cat = (category || '').toLowerCase();
-  return rules.find((r) => cat === (r.pattern || '').toLowerCase());
+  const cat = normalizeForMatch(category);
+  return rules.find((r) => cat === normalizeForMatch(r.pattern));
 }
 
+// A "once" rule (matchType 'transaction', tied to this row's real id) and an
+// "always" rule (exact/contains, tied to the description) can both match the
+// same transaction — whichever was created more recently wins, so setting
+// "Always" after a prior "Once" actually overrides it instead of staying
+// stuck on the older once-off value.
 function resolveAttribute(t, attribute, rules) {
   const attrRules = rules.filter((r) => r.attribute === attribute);
-  const txnMatch = attrRules.find((r) => r.matchType === 'transaction' && r.transactionId === t.id);
-  if (txnMatch) return txnMatch.value;
+  // Guards against any pre-existing duplicate Once rules (from before this
+  // was deduped on create) — picks the most recently created one rather than
+  // whichever happens to come first by id order.
+  const txnMatch = attrRules
+    .filter((r) => r.matchType === 'transaction' && r.transactionId === t.id)
+    .reduce((latest, r) => (!latest || new Date(r.createdAt) > new Date(latest.createdAt) ? r : latest), null);
   const descMatch = findDescriptionMatch(t.description, attrRules.filter((r) => r.matchType === 'exact' || r.matchType === 'contains'));
-  return descMatch ? descMatch.value : null;
+  if (txnMatch && descMatch) {
+    return new Date(txnMatch.createdAt) >= new Date(descMatch.createdAt) ? txnMatch.value : descMatch.value;
+  }
+  return (txnMatch ?? descMatch)?.value ?? null;
 }
 
 function applyRules(transactions, rules) {
@@ -81,69 +108,29 @@ function applyRules(transactions, rules) {
 }
 
 async function applyRulesTo(transactions) {
-  const result = applyRules(transactions, await listRules());
-  await ensureCategories(result.map((t) => t.category));
+  const result = applyRules(transactions, await repo.listRules());
+  await repo.ensureCategories(result.map((t) => t.category));
   return result;
 }
 
+async function listRules() {
+  return repo.listRules();
+}
+
 async function listCategories() {
-  const { rows } = await pool.query(`SELECT ${CATEGORY_COLUMNS} FROM categories ORDER BY name ASC`);
-  return rows;
+  return repo.listCategories();
 }
 
 async function createCategory(name) {
-  try {
-    const { rows } = await pool.query(
-      `INSERT INTO categories (name) VALUES ($1) RETURNING ${CATEGORY_COLUMNS}`,
-      [name]
-    );
-    return { status: 'ok', category: rows[0] };
-  } catch (err) {
-    if (err.code === '23505') return { status: 'conflict' };
-    throw err;
-  }
+  return repo.insertCategory(name);
 }
 
 async function renameCategory(id, newName) {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const { rows } = await client.query('SELECT name FROM categories WHERE id = $1 FOR UPDATE', [id]);
-    if (!rows.length) {
-      await client.query('ROLLBACK');
-      return { status: 'not_found' };
-    }
-    const oldName = rows[0].name;
-    if (oldName !== newName) {
-      await client.query('UPDATE categories SET name = $1 WHERE id = $2', [newName, id]);
-      await client.query(`UPDATE rules SET value = $1 WHERE attribute = 'category' AND value = $2`, [newName, oldName]);
-      await client.query(
-        `UPDATE rules SET pattern = $1 WHERE attribute = 'category' AND match_type = 'category' AND pattern = $2`,
-        [newName, oldName]
-      );
-    }
-    await client.query('COMMIT');
-    return { status: 'ok', category: { id, name: newName } };
-  } catch (err) {
-    await client.query('ROLLBACK');
-    if (err.code === '23505') return { status: 'conflict' };
-    throw err;
-  } finally {
-    client.release();
-  }
+  return repo.updateCategoryName(id, newName);
 }
 
 async function deleteCategory(id) {
-  const { rows: cat } = await pool.query('SELECT name FROM categories WHERE id = $1', [id]);
-  if (!cat.length) return { status: 'not_found' };
-  const { name } = cat[0];
-  const { rows: usage } = await pool.query(
-    `SELECT 1 FROM rules WHERE attribute = 'category' AND (value = $1 OR (match_type = 'category' AND pattern = $1)) LIMIT 1`,
-    [name]
-  );
-  if (usage.length) return { status: 'in_use' };
-  await pool.query('DELETE FROM categories WHERE id = $1', [id]);
-  return { status: 'ok' };
+  return repo.deleteCategoryRow(id);
 }
 
 module.exports = {
@@ -151,6 +138,7 @@ module.exports = {
   createRule,
   updateRule,
   deleteRule,
+  promoteRuleToAlways,
   applyRulesTo,
   listCategories,
   createCategory,

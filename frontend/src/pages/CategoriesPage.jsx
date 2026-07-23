@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   fetchRules,
   createRule,
+  promoteRuleToAlways,
   deleteRule,
   applyCategoryRules,
   fetchCategories,
@@ -12,17 +13,56 @@ import {
 import CategorySelect from '../components/CategorySelect';
 import CategoryGrid from '../components/CategoryGrid';
 
+// These rules are always "Always" scope (they match by description, so they
+// keep applying to future transactions too) — a rule scoped to just one
+// transaction ("Once") is only created via the inline edit in the
+// transactions table, not from this form.
 const MATCH_TYPES_BY_ATTRIBUTE = {
   category: [
-    { value: 'contains', label: 'Contains (auto - any matching transaction, including future ones)' },
-    { value: 'exact', label: 'Exact (manual - this one description only)' },
-    { value: 'category', label: 'Merge (merge every transaction currently in this category)' },
+    { value: 'contains', label: 'Description contains this text' },
+    { value: 'exact', label: 'Description matches exactly' },
+    { value: 'category', label: 'Merge - move every transaction from one category into another' },
   ],
   title: [
-    { value: 'contains', label: 'Contains (auto - any matching transaction, including future ones)' },
-    { value: 'exact', label: 'Exact (manual - this one description only)' },
+    { value: 'contains', label: 'Description contains this text' },
+    { value: 'exact', label: 'Description matches exactly' },
   ],
 };
+
+// Once -> Always is well-defined (the rule keeps matching by the same
+// description that transaction already had). Always -> Once isn't offered:
+// an always rule matches by description alone, so there's no single
+// transaction id to pin a "once" rule to.
+//
+// "Always" alone doesn't say whether it's an exact-match or contains-match
+// rule (both resolve to matchType 'exact'/'contains') — shown as a small
+// suffix so that's visible without spelling it out in every row's Match
+// text column.
+function RuleScopeCell({ rule, onPromote }) {
+  if (rule.matchType === 'category') return <span className="rule-scope-label">Merge</span>;
+  if (rule.matchType === 'transaction') {
+    return (
+      <span className="scope-toggle">
+        <button type="button" className="active" disabled>Once</button>
+        <button type="button" onClick={() => onPromote(rule)}>Always</button>
+      </span>
+    );
+  }
+  return (
+    <span className="scope-toggle">
+      <button
+        type="button"
+        disabled
+        title="Not available — this rule matches by description, not one specific transaction"
+      >
+        Once
+      </button>
+      <button type="button" className="active" disabled>
+        Always <span className="rule-match-kind">({rule.matchType})</span>
+      </button>
+    </span>
+  );
+}
 
 export default function CategoriesPage({ transactions, onLoaded }) {
   const [rules, setRules] = useState([]);
@@ -162,6 +202,16 @@ export default function CategoriesPage({ transactions, onLoaded }) {
     setRules(await fetchRules());
   }
 
+  async function handlePromoteToAlways(rule) {
+    try {
+      await promoteRuleToAlways(rule.id);
+      setGridStatus({ message: '', error: false });
+      await refreshAfterCategoryChange();
+    } catch (err) {
+      setGridStatus({ message: err.message, error: true });
+    }
+  }
+
   return (
     <div className="categories-page">
       <div className="category-add">
@@ -269,20 +319,26 @@ export default function CategoriesPage({ transactions, onLoaded }) {
         <table>
           <thead>
             <tr>
+              <th>#</th>
               <th>Sets</th>
               <th>Match text</th>
-              <th>Type</th>
               <th>Value</th>
+              <th>Scope</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {rules.map((r) => (
+            {rules.map((r, i) => (
               <tr key={r.id}>
+                <td>{i + 1}</td>
                 <td>{r.attribute}</td>
-                <td>{r.pattern ?? `this transaction (#${r.transactionId})`}</td>
-                <td>{r.matchType === 'transaction' ? 'single-use' : r.matchType}</td>
+                <td>
+                  {r.matchType === 'transaction'
+                    ? (r.transactionDescription ?? `transaction #${r.transactionId} (no longer in the data)`)
+                    : r.pattern}
+                </td>
                 <td>{r.value}</td>
+                <td><RuleScopeCell rule={r} onPromote={handlePromoteToAlways} /></td>
                 <td>
                   <button type="button" onClick={() => handleDelete(r.id)}>Delete</button>
                 </td>
@@ -290,7 +346,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
             ))}
             {!rules.length && (
               <tr>
-                <td colSpan={5}>No rules yet — transactions keep their source category until you add one.</td>
+                <td colSpan={6}>No rules yet — transactions keep their source category until you add one.</td>
               </tr>
             )}
           </tbody>

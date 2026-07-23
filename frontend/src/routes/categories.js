@@ -12,6 +12,18 @@ export function createRule(rule) {
   }).then(parseJson);
 }
 
+export function updateRule(id, rule) {
+  return fetch(`/api/categories/rules/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(rule),
+  }).then(parseJson);
+}
+
+export function promoteRuleToAlways(id) {
+  return fetch(`/api/categories/rules/${id}/promote`, { method: 'POST' }).then(parseJson);
+}
+
 export function deleteRule(id) {
   return fetch(`/api/categories/rules/${id}`, { method: 'DELETE' }).then((res) => {
     if (!res.ok) throw new Error('Failed to delete rule');
