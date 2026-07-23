@@ -13,6 +13,15 @@ export function formatGap(days) {
   return `${days.toFixed(1)}d`;
 }
 
+// t.date arrives as a plain 'YYYY-MM-DD' string (see transactionService's
+// SELECT_COLUMNS) — parsed here by splitting rather than `new Date()`, since
+// that would reinterpret it in the browser's local timezone and can shift
+// the displayed day.
+export function formatDate(isoDate) {
+  const [y, m, d] = isoDate.split('-');
+  return `${d}.${m}.${y}`;
+}
+
 export function formatDayMonth(date) {
   const d = new Date(date);
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;

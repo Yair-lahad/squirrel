@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   fetchRules,
   createRule,
-  promoteRuleToAlways,
   deleteRule,
   applyCategoryRules,
   fetchCategories,
@@ -12,6 +11,7 @@ import {
 } from '../routes/categories';
 import CategorySelect from '../components/CategorySelect';
 import CategoryGrid from '../components/CategoryGrid';
+import Table from '../components/Table';
 
 // These rules are always "Always" scope (they match by description, so they
 // keep applying to future transactions too) — a rule scoped to just one
@@ -29,37 +29,17 @@ const MATCH_TYPES_BY_ATTRIBUTE = {
   ],
 };
 
-// Once -> Always is well-defined (the rule keeps matching by the same
-// description that transaction already had). Always -> Once isn't offered:
-// an always rule matches by description alone, so there's no single
-// transaction id to pin a "once" rule to.
-//
-// "Always" alone doesn't say whether it's an exact-match or contains-match
-// rule (both resolve to matchType 'exact'/'contains') — shown as a small
-// suffix so that's visible without spelling it out in every row's Match
-// text column.
-function RuleScopeCell({ rule, onPromote }) {
+// Toggling scope (Once <-> Always) directly from this list is disabled for
+// now — Once -> Always is well-defined, but Always -> Once isn't (an always
+// rule matches by description alone, so there's no single transaction id to
+// pin a "once" rule to). Until that's resolved, the Scope column is a plain
+// label rather than an interactive toggle.
+function RuleScopeCell({ rule }) {
   if (rule.matchType === 'category') return <span className="rule-scope-label">Merge</span>;
-  if (rule.matchType === 'transaction') {
-    return (
-      <span className="scope-toggle">
-        <button type="button" className="active" disabled>Once</button>
-        <button type="button" onClick={() => onPromote(rule)}>Always</button>
-      </span>
-    );
-  }
+  if (rule.matchType === 'transaction') return <span className="rule-scope-label">Once</span>;
   return (
-    <span className="scope-toggle">
-      <button
-        type="button"
-        disabled
-        title="Not available — this rule matches by description, not one specific transaction"
-      >
-        Once
-      </button>
-      <button type="button" className="active" disabled>
-        Always <span className="rule-match-kind">({rule.matchType})</span>
-      </button>
+    <span className="rule-scope-label">
+      Always <span className="rule-match-kind">({rule.matchType})</span>
     </span>
   );
 }
@@ -67,7 +47,7 @@ function RuleScopeCell({ rule, onPromote }) {
 export default function CategoriesPage({ transactions, onLoaded }) {
   const [rules, setRules] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ attribute: 'category', matchType: 'contains', pattern: '', value: '' });
+  const [form, setForm] = useState({ attribute: 'title', matchType: 'contains', pattern: '', value: '' });
   const [status, setStatus] = useState({ message: '', error: false });
   const [gridStatus, setGridStatus] = useState({ message: '', error: false });
   const [formKey, setFormKey] = useState(0);
@@ -202,16 +182,6 @@ export default function CategoriesPage({ transactions, onLoaded }) {
     setRules(await fetchRules());
   }
 
-  async function handlePromoteToAlways(rule) {
-    try {
-      await promoteRuleToAlways(rule.id);
-      setGridStatus({ message: '', error: false });
-      await refreshAfterCategoryChange();
-    } catch (err) {
-      setGridStatus({ message: err.message, error: true });
-    }
-  }
-
   return (
     <div className="categories-page">
       <div className="category-add">
@@ -315,43 +285,31 @@ export default function CategoriesPage({ transactions, onLoaded }) {
         </form>
       </section>
 
-      <div className="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Sets</th>
-              <th>Match text</th>
-              <th>Value</th>
-              <th>Scope</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rules.map((r, i) => (
-              <tr key={r.id}>
-                <td>{i + 1}</td>
-                <td>{r.attribute}</td>
-                <td>
-                  {r.matchType === 'transaction'
-                    ? (r.transactionDescription ?? `transaction #${r.transactionId} (no longer in the data)`)
-                    : r.pattern}
-                </td>
-                <td>{r.value}</td>
-                <td><RuleScopeCell rule={r} onPromote={handlePromoteToAlways} /></td>
-                <td>
-                  <button type="button" onClick={() => handleDelete(r.id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-            {!rules.length && (
-              <tr>
-                <td colSpan={6}>No rules yet — transactions keep their source category until you add one.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={[
+          { key: 'attribute', label: 'Sets', render: (r) => r.attribute },
+          {
+            key: 'match',
+            label: 'Match text',
+            render: (r) =>
+              r.matchType === 'transaction'
+                ? (r.transactionDescription ?? `transaction #${r.transactionId} (no longer in the data)`)
+                : r.pattern,
+          },
+          { key: 'value', label: 'Value', render: (r) => r.value },
+          { key: 'scope', label: 'Scope', render: (r) => <RuleScopeCell rule={r} /> },
+          {
+            key: 'actions',
+            label: '',
+            render: (r) => (
+              <button type="button" onClick={() => handleDelete(r.id)}>Delete</button>
+            ),
+          },
+        ]}
+        rows={rules}
+        rowKey={(r) => r.id}
+        emptyMessage="No rules yet — transactions keep their source category until you add one."
+      />
     </div>
   );
 }

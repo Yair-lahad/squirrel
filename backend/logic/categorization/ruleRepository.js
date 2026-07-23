@@ -119,9 +119,14 @@ async function updateCategoryName(id, newName) {
   }
 }
 
+// Only the "value" side counts as in-use: that's the category actively
+// assigned to transactions going forward. A merge rule's "pattern" side is
+// the category being phased OUT — blocking deletion there would make it
+// impossible to ever clean up a category after merging it away, which
+// defeats the point of the merge.
 async function categoryInUse(name) {
   const { rows } = await pool.query(
-    `SELECT 1 FROM rules WHERE attribute = 'category' AND (value = $1 OR (match_type = 'category' AND pattern = $1)) LIMIT 1`,
+    `SELECT 1 FROM rules WHERE attribute = 'category' AND value = $1 LIMIT 1`,
     [name]
   );
   return rows.length > 0;

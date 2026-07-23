@@ -3,17 +3,9 @@ import { fetchSortedTransactions } from '../routes/analytics';
 import { createRule, applyCategoryRules, fetchCategories } from '../routes/categories';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { usePagination } from '../hooks/usePagination';
-import { formatCurrency } from '../core/format';
+import { formatCurrency, formatDate } from '../core/format';
 import CategorySelect from './CategorySelect';
-import Pagination from './Pagination';
-
-const COLUMNS = [
-  { key: 'date', label: 'Date' },
-  { key: 'title', label: 'Title' },
-  { key: 'description', label: 'Description' },
-  { key: 'category', label: 'Category' },
-  { key: 'amount', label: 'Amount' },
-];
+import Table from './Table';
 
 // Once = a single-use rule tied to this one transaction's real id (never
 // reoccurs, since a future fetch's transactions have different ids). Always
@@ -47,6 +39,21 @@ function ruleForEdit(attribute, scope, t, value) {
     : { attribute, matchType: 'transaction', transactionId: t.id, value };
 }
 
+// t.date is stored as ISO ('YYYY-MM-DD') and displayed day-first, but a
+// search typed by hand could be either style — matching against both means
+// either one finds the row.
+function matchesSearch(t, query) {
+  if (!query) return true;
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    t.title?.toLowerCase().includes(q) ||
+    t.description?.toLowerCase().includes(q) ||
+    t.date?.includes(q) ||
+    formatDate(t.date).includes(q)
+  );
+}
+
 export default function TransactionsTable({ transactions, onTransactionsChange }) {
   const [sortKey, setSortKey] = useState('date');
   const [sortAsc, setSortAsc] = useState(false);
@@ -57,6 +64,7 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   const [titleEditValue, setTitleEditValue] = useState('');
   const [titleEditScope, setTitleEditScope] = useState('always');
   const [catalogCategories, setCatalogCategories] = useState([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchCategories().then((cats) => setCatalogCategories(cats.map((c) => c.name)));
@@ -75,7 +83,9 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
     [transactions, sortKey, sortAsc]
   );
 
-  const { pageSize, setPageSize, page: currentPage, setPage, pageCount, pageStart, paginated } = usePagination(sorted);
+  const filtered = useMemo(() => sorted?.filter((t) => matchesSearch(t, search)) ?? null, [sorted, search]);
+
+  const { pageSize, setPageSize, page: currentPage, setPage, pageCount, pageStart, paginated } = usePagination(filtered);
 
   const existingCategories = useMemo(() => {
     const set = new Set(transactions.map((t) => t.category));
@@ -117,106 +127,106 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
 
   if (!sorted) return null;
 
+  const columns = [
+    { key: 'date', label: 'Date', sortable: true, render: (t) => formatDate(t.date) },
+    {
+      key: 'title',
+      label: 'Title',
+      sortable: true,
+      cellClassName: () => 'title-cell',
+      cellProps: (t, i) => ({
+        onKeyDown: (e) => {
+          if (editingTitleRow === i && e.key === 'Escape') setEditingTitleRow(null);
+        },
+      }),
+      render: (t, i) =>
+        editingTitleRow === i ? (
+          <span className="cell-editing">
+            <input
+              autoFocus
+              autoComplete="off"
+              value={titleEditValue}
+              onChange={(e) => setTitleEditValue(e.target.value)}
+              onBlur={(e) => {
+                if (e.relatedTarget?.closest('.scope-toggle')) return;
+                saveTitleEdit(t, titleEditScope);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.target.blur();
+              }}
+            />
+            <ScopeToggle
+              scope={titleEditScope}
+              onChange={(scope) => {
+                setTitleEditScope(scope);
+                saveTitleEdit(t, scope);
+              }}
+            />
+          </span>
+        ) : (
+          <span onClick={() => startEditTitle(t, i)} title="Click to edit title">
+            {t.title}
+          </span>
+        ),
+    },
+    { key: 'description', label: 'Description', sortable: true, render: (t) => t.description },
+    {
+      key: 'category',
+      label: 'Category',
+      sortable: true,
+      cellClassName: () => 'category-cell',
+      cellProps: (t, i) => ({
+        onKeyDown: (e) => {
+          if (editingRow === i && e.key === 'Escape') setEditingRow(null);
+        },
+      }),
+      render: (t, i) =>
+        editingRow === i ? (
+          <span className="cell-editing">
+            <CategorySelect
+              value={editValue}
+              categories={existingCategories}
+              onChange={setEditValue}
+              onCommit={(category) => saveEdit(t, category)}
+            />
+            <ScopeToggle scope={categoryEditScope} onChange={setCategoryEditScope} />
+          </span>
+        ) : (
+          <span onClick={() => startEdit(t, i)} title="Click to assign a category">
+            {t.category}
+          </span>
+        ),
+    },
+    {
+      key: 'amount',
+      label: 'Amount',
+      sortable: true,
+      cellClassName: (t) => (t.amount > 0 ? 'amount-income' : 'amount-expense'),
+      render: (t) => `${t.amount > 0 ? '+' : ''}${formatCurrency(Math.abs(t.amount))}`,
+    },
+  ];
+
   return (
-    <div className="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th className="row-number-header">#</th>
-            {COLUMNS.map((col) => (
-              <th key={col.key} onClick={() => handleSort(col.key)} className="sortable-header">
-                {col.label}
-                <span className="sort-arrow">
-                  {sortKey === col.key ? (sortAsc ? ' ▲' : ' ▼') : ''}
-                </span>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {paginated.map((t, localI) => {
-            const i = pageStart + localI;
-            const isIncome = t.amount > 0;
-            const editing = editingRow === i;
-            const editingTitle = editingTitleRow === i;
-            return (
-              <tr key={i}>
-                <td className="row-number">{i + 1}</td>
-                <td>{t.date}</td>
-                <td
-                  className="title-cell"
-                  onKeyDown={(e) => {
-                    if (editingTitle && e.key === 'Escape') setEditingTitleRow(null);
-                  }}
-                >
-                  {editingTitle ? (
-                    <span className="cell-editing">
-                      <input
-                        autoFocus
-                        autoComplete="off"
-                        value={titleEditValue}
-                        onChange={(e) => setTitleEditValue(e.target.value)}
-                        onBlur={(e) => {
-                          if (e.relatedTarget?.closest('.scope-toggle')) return;
-                          saveTitleEdit(t, titleEditScope);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') e.target.blur();
-                        }}
-                      />
-                      <ScopeToggle
-                        scope={titleEditScope}
-                        onChange={(scope) => {
-                          setTitleEditScope(scope);
-                          saveTitleEdit(t, scope);
-                        }}
-                      />
-                    </span>
-                  ) : (
-                    <span onClick={() => startEditTitle(t, i)} title="Click to edit title">
-                      {t.title}
-                    </span>
-                  )}
-                </td>
-                <td>{t.description}</td>
-                <td
-                  className="category-cell"
-                  onKeyDown={(e) => {
-                    if (editing && e.key === 'Escape') setEditingRow(null);
-                  }}
-                >
-                  {editing ? (
-                    <span className="cell-editing">
-                      <CategorySelect
-                        value={editValue}
-                        categories={existingCategories}
-                        onChange={setEditValue}
-                        onCommit={(category) => saveEdit(t, category)}
-                      />
-                      <ScopeToggle scope={categoryEditScope} onChange={setCategoryEditScope} />
-                    </span>
-                  ) : (
-                    <span onClick={() => startEdit(t, i)} title="Click to assign a category">
-                      {t.category}
-                    </span>
-                  )}
-                </td>
-                <td className={isIncome ? 'amount-income' : 'amount-expense'}>
-                  {isIncome ? '+' : ''}
-                  {formatCurrency(Math.abs(t.amount))}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <Pagination
-        pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        page={currentPage}
-        onPageChange={setPage}
-        pageCount={pageCount}
+    <>
+      <div className="table-toolbar">
+        <input
+          type="text"
+          className="table-search"
+          autoComplete="off"
+          placeholder="Search title, description, or date (e.g. 06.07.2026)…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+      <Table
+        columns={columns}
+        rows={paginated}
+        rowStart={pageStart}
+        sortKey={sortKey}
+        sortAsc={sortAsc}
+        onSort={handleSort}
+        pagination={{ pageSize, onPageSizeChange: setPageSize, page: currentPage, onPageChange: setPage, pageCount }}
       />
-    </div>
+    </>
   );
 }

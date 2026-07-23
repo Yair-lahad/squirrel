@@ -3,7 +3,10 @@ const transactionService = require('../logic/transactions/transactionService');
 const ruleService = require('../logic/categorization/ruleService');
 
 async function fetchFile(req, res) {
-  const stored = await transactionService.storeAndGetIds(fileSource.getTransactions(), 'file', 'Sample file');
+  const existing = await transactionService.findUploadBySource('file');
+  const stored = existing
+    ? await transactionService.getTransactions({ uploadId: existing.id })
+    : await transactionService.storeAndGetIds(fileSource.getTransactions(), 'file', 'Sample file');
   res.json(await ruleService.applyRulesTo(stored));
 }
 

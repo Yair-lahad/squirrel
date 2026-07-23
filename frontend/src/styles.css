@@ -570,6 +570,9 @@ button {
 .table-card {
   overflow-x: auto;
   margin-top: 1.5rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .table-toolbar {
@@ -588,6 +591,14 @@ button {
   margin-bottom: 0;
 }
 
+.table-search {
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+
 .table-pagination {
   display: flex;
   align-items: center;
@@ -601,34 +612,71 @@ table {
 
 th, td {
   text-align: left;
-  padding: 0.4rem 0.6rem;
+  padding: 0.55rem 0.75rem;
   border-bottom: 1px solid var(--color-border-light);
 }
 
-th {
-  cursor: pointer;
+thead th {
+  background: var(--color-surface-alt, #f7f7f5);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-light);
   user-select: none;
+}
+
+.sortable-header {
+  cursor: pointer;
   opacity: 0.85;
 }
 
-th:hover {
+.sortable-header:hover {
   opacity: 1;
 }
 
-.category-cell span {
-  cursor: pointer;
-  border-bottom: 1px dashed var(--color-border-light);
+tbody tr:hover {
+  background: rgba(0, 0, 0, 0.025);
 }
 
-.category-cell input {
-  width: 100%;
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
+.category-cell span,
 .title-cell span {
+  position: relative;
   cursor: pointer;
-  border-bottom: 1px dashed var(--color-border-light);
+  border-bottom: 1px dashed transparent;
+  padding-right: 1.4em;
+  padding-bottom: 1px;
 }
 
+.category-cell span:hover,
+.title-cell span:hover {
+  border-bottom-color: var(--color-primary);
+  background: rgba(42, 120, 214, 0.08);
+}
+
+.category-cell span::after,
+.title-cell span::after {
+  content: '✎';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  font-size: 1.1em;
+  color: var(--color-primary);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.category-cell span:hover::after,
+.title-cell span:hover::after {
+  opacity: 1;
+}
+
+.category-cell input,
 .title-cell input {
   width: 100%;
 }

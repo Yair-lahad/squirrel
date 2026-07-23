@@ -43,6 +43,18 @@ async function storeAndGetIds(transactions, source, label) {
   return stored;
 }
 
+// The bundled sample file is static data, not a real statement period — reusing
+// its existing upload (rather than inserting a fresh duplicate row on every
+// click of "Load sample file") keeps clicking it again from spawning another
+// identical entry in the upload selector.
+async function findUploadBySource(source) {
+  const { rows } = await pool.query(
+    'SELECT id FROM uploads WHERE source = $1 ORDER BY id DESC LIMIT 1',
+    [source]
+  );
+  return rows[0] || null;
+}
+
 async function getAll() {
   const { rows } = await pool.query(`SELECT ${SELECT_COLUMNS} FROM transactions ORDER BY date`);
   return rows;
@@ -88,4 +100,4 @@ async function getUploads() {
   return rows;
 }
 
-module.exports = { storeAndGetIds, getAll, getTransactions, getUploads };
+module.exports = { storeAndGetIds, findUploadBySource, getAll, getTransactions, getUploads };
