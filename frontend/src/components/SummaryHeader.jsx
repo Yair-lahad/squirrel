@@ -17,7 +17,13 @@ export default function SummaryHeader({ title, transactions, actions }) {
   return (
     <div className="summary-header">
       <h2>
-        {title} <span className="summary-header-period">{formatPeriod(transactions)}</span>
+        {title}{' '}
+        <span
+          className="summary-header-period"
+          title="Transactions run from the middle of the previous month to the middle of this one"
+        >
+          {formatPeriod(transactions)}
+        </span>
       </h2>
       <span className={`summary-header-amount ${net >= 0 ? 'income' : ''}`}>
         {formatCurrency(Math.abs(net))}

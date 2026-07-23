@@ -18,25 +18,16 @@ export function formatDayMonth(date) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+// A period is labeled by its last month only (e.g. "Jun 26"), not a
+// start-end range — a range computed two different ways (client-side
+// literal min/max vs a backend-trimmed range) is how the headline and the
+// upload selector ended up disagreeing; showing only the end avoids that.
 export function formatMonthYear(date) {
-  return new Date(date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-}
-
-function formatMonth(date) {
-  return new Date(date).toLocaleDateString('en-GB', { month: 'long' });
+  return new Date(date).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
 }
 
 export function formatPeriod(transactions) {
   if (!transactions.length) return '';
   const times = transactions.map((t) => new Date(t.date).getTime());
-  const earliestDate = new Date(Math.min(...times));
-  const latestDate = new Date(Math.max(...times));
-
-  if (earliestDate.getTime() === latestDate.getTime()) return formatMonthYear(earliestDate);
-
-  if (earliestDate.getFullYear() === latestDate.getFullYear()) {
-    return `${formatMonth(earliestDate)}–${formatMonthYear(latestDate)}`;
-  }
-
-  return `${formatMonthYear(earliestDate)} – ${formatMonthYear(latestDate)}`;
+  return formatMonthYear(new Date(Math.max(...times)));
 }

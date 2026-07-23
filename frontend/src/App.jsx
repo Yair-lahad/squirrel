@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import Header from './components/layout/Header';
 import Nav from './components/layout/Nav';
+import UploadSelector from './components/layout/UploadSelector';
 import HomePage from './pages/HomePage';
 import LoadDataPage from './pages/LoadDataPage';
 import ChartsPage from './pages/ChartsPage';
 import TransactionsPage from './pages/TransactionsPage';
 import CategoriesPage from './pages/CategoriesPage';
-import { useTransactions } from './hooks/useTransactions';
+import { useUploads } from './hooks/useUploads';
 
 const PAGES = {
   home: HomePage,
@@ -15,6 +16,11 @@ const PAGES = {
   categories: CategoriesPage,
   'load-data': LoadDataPage,
 };
+
+// Which pages the upload selector is relevant to — Categories/Load Data/Home
+// don't filter by upload, so showing it there would just be noise.
+ChartsPage.showUploadSelector = true;
+TransactionsPage.showUploadSelector = true;
 
 const DEFAULT_PAGE = 'home';
 
@@ -25,7 +31,7 @@ function currentPage() {
 
 export default function App() {
   const [page, setPage] = useState(currentPage);
-  const [transactions, setTransactions] = useTransactions();
+  const { transactions, uploads, selectedUploadId, changeUpload, refresh } = useUploads();
 
   useEffect(() => {
     const onPopState = () => setPage(currentPage());
@@ -44,9 +50,12 @@ export default function App() {
     <>
       <header className="site-header">
         <Nav page={page} onChange={changePage} />
+        {Page.showUploadSelector && (
+          <UploadSelector uploads={uploads} value={selectedUploadId} onChange={changeUpload} />
+        )}
         <Header />
       </header>
-      <Page transactions={transactions} onLoaded={setTransactions} />
+      <Page transactions={transactions} onLoaded={() => refresh()} />
     </>
   );
 }

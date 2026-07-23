@@ -11,7 +11,7 @@ async function fetchVendor(req, res) {
 
   try {
     const transactions = await vendorSource.fetchTransactions({ id, password, card6Digits, startDate });
-    const stored = await transactionService.storeAndGetIds(transactions, 'vendor');
+    const stored = await transactionService.storeAndGetIds(transactions, 'vendor', `Isracard fetch (from ${startDate})`);
     res.json(await ruleService.applyRulesTo(stored));
   } catch (err) {
     res.status(502).json({ error: err.message || 'Fetch failed' });
