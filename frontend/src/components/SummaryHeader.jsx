@@ -6,10 +6,10 @@ import { formatCurrency, formatPeriod } from '../core/format';
 // figure Overview shows (via the same /api/analytics/totals endpoint), reused
 // wherever a set of transactions needs a header instead of being recomputed
 // per page (CategoryDetail, Transactions, …).
-export default function SummaryHeader({ title, transactions, actions }) {
+export default function SummaryHeader({ title, transactions, actions, period }) {
   const totals = useAnalytics(() => fetchTotals(transactions), [transactions]);
 
-  if (!transactions.length || !totals) return null;
+  if (!totals) return null;
 
   const count = transactions.length;
   const { net } = totals;
@@ -22,7 +22,7 @@ export default function SummaryHeader({ title, transactions, actions }) {
           className="summary-header-period"
           title="Transactions run from the middle of the previous month to the middle of this one"
         >
-          {formatPeriod(transactions)}
+          {period ?? formatPeriod(transactions)}
         </span>
       </h2>
       <span className={`summary-header-amount ${net >= 0 ? 'income' : ''}`}>

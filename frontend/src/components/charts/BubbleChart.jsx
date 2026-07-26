@@ -1,6 +1,7 @@
 // Each category as a circle sized by its share of the metric (area-proportional,
 // via sqrt) - a more visceral "this one's big" read than a bar's length.
 import { formatCurrency } from '../../core/format';
+import { categoryVisual } from '../../core/categoryVisuals';
 import CashStackIcon from '../icons/CashStackIcon';
 import CoinsIcon from '../icons/CoinsIcon';
 
@@ -23,6 +24,7 @@ export default function BubbleChart({ rows, metric, colors, onSelectCategories }
       {rows.map((row, i) => {
         const diameter = diameterFor(row[metric], maxValue);
         const valueText = metric === 'amount' ? formatCurrency(row.amount) : row.count;
+        const { icon, initial } = categoryVisual(row.category);
         return (
           <button
             key={row.category}
@@ -46,7 +48,7 @@ export default function BubbleChart({ rows, metric, colors, onSelectCategories }
                   <CoinsIcon className="bubble-icon" size="1em" />
                 )
               ) : (
-                <span className="bubble-icon">{'\u{1F9FE}'}</span>
+                <span className="bubble-icon">{icon || initial}</span>
               )}
               <span className="bubble-value">{valueText}</span>
             </span>

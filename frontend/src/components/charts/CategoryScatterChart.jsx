@@ -3,6 +3,16 @@ import { formatCurrency, formatDayMonth } from '../../core/format';
 import { PALETTE } from '../../core/palette';
 
 export default function CategoryScatterChart({ transactions }) {
+  if (!transactions.length) {
+    return (
+      <div className="chart-card">
+        <div className="chart-canvas chart-canvas-empty">
+          <p className="empty-state">No transactions in this category for the selected upload.</p>
+        </div>
+      </div>
+    );
+  }
+
   const points = transactions.map((t) => ({
     x: new Date(t.date).getTime(),
     y: Math.abs(t.amount),
@@ -29,6 +39,7 @@ export default function CategoryScatterChart({ transactions }) {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
+      datalabels: { display: false },
       tooltip: {
         callbacks: {
           title(items) {

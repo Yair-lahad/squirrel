@@ -11,10 +11,21 @@ import {
   Legend,
   Tooltip,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import App from './App';
 import './styles.css';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Legend, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  PointElement,
+  LineElement,
+  Legend,
+  Tooltip,
+  ChartDataLabels
+);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -1,5 +1,8 @@
-// shows the category chart until a category (or "Others" group) is selected, then swaps to its detail view in place.
-import { useState } from 'react';
+// The full picker chart shows until a category is chosen; once one is,
+// it's replaced entirely by the drawer, whose side column carries a lean
+// MiniCategoryPicker (under Advisor) so switching categories never needs
+// scrolling back up to a chart that isn't there anymore.
+import { useRef, useState } from 'react';
 import SpendingChart from '../components/charts/SpendingChart';
 import CategoryDetail from '../components/CategoryDetail';
 import EmptyState from '../components/layout/EmptyState';
@@ -7,16 +10,26 @@ import EmptyState from '../components/layout/EmptyState';
 export default function ChartsPage({ transactions }) {
   const [selectedCategories, setSelectedCategories] = useState(null);
   const [metric, setMetric] = useState('amount');
+  const detailRef = useRef(null);
 
   if (!transactions.length) return <EmptyState />;
 
+  function scrollToDetail() {
+    detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   if (selectedCategories) {
     return (
-      <CategoryDetail
-        categories={selectedCategories}
-        transactions={transactions}
-        onBack={() => setSelectedCategories(null)}
-      />
+      <div ref={detailRef}>
+        <CategoryDetail
+          categories={selectedCategories}
+          transactions={transactions}
+          metric={metric}
+          onBack={() => setSelectedCategories(null)}
+          onSelectCategories={setSelectedCategories}
+          onReady={scrollToDetail}
+        />
+      </div>
     );
   }
 

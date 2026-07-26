@@ -32,7 +32,7 @@ export function formatDayMonth(date) {
 // literal min/max vs a backend-trimmed range) is how the headline and the
 // upload selector ended up disagreeing; showing only the end avoids that.
 export function formatMonthYear(date) {
-  return new Date(date).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+  return new Date(date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 }
 
 export function formatPeriod(transactions) {
