@@ -13,7 +13,7 @@ import OthersThresholdChip from './OthersThresholdChip';
 import BubbleChart from './BubbleChart';
 
 export default function SpendingChart({ transactions, metric, onMetricChange, onSelectCategories }) {
-  const [view, setView] = useState('bubbles');
+  const [view, setView] = useState('bubble');
 
   const sortedRows = useCategoryRows(transactions, metric);
   const grouping = useOthersGrouping(sortedRows ?? [], metric);

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 'All'];
 
-// Shared paging logic for any table — slices `items` into pages and resets
+// Shared paging logic for any table - slices `items` into pages and resets
 // back to page 1 whenever the underlying list (a new sort, a different
 // upload, etc.) or the page size changes, so you can't get stranded on a
 // page index that no longer has any rows.

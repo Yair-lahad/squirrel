@@ -1,13 +1,22 @@
-const transactionService = require('../logic/transactions/transactionService');
-const ruleService = require('../logic/categorization/ruleService');
+const ingestService = require('../core/ingestion/ingestService');
 
 async function fetchUpload(req, res) {
   const { transactions, label } = req.body || {};
   if (!Array.isArray(transactions)) {
     return res.status(400).json({ error: 'transactions array is required' });
   }
-  const stored = await transactionService.storeAndGetIds(transactions, 'upload', label);
-  res.json(await ruleService.applyRulesTo(stored));
+  res.json(await ingestService.ingestUploadJson(transactions, label));
 }
 
-module.exports = { fetchUpload };
+async function fetchUploadDoc(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ error: 'file is required' });
+  }
+  try {
+    res.json(await ingestService.ingestUploadDoc(req.file));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { fetchUpload, fetchUploadDoc };

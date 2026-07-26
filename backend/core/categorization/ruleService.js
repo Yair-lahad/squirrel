@@ -1,7 +1,7 @@
 const repo = require('./ruleRepository');
 
 // Only one "Once" rule can ever make sense for a given transaction+attribute
-// — re-editing the same row with "Once" should replace that rule, not stack
+// - re-editing the same row with "Once" should replace that rule, not stack
 // a second one on top of it (which left the older one winning, since
 // resolution used to just take the first match by id order).
 async function createRule({ attribute, matchType, pattern, transactionId, value }) {
@@ -39,8 +39,8 @@ async function promoteRuleToAlways(id) {
 }
 
 // Scraped bank data (israeli-bank-scrapers, Hebrew descriptions especially)
-// routinely embeds invisible characters — RTL/bidi control marks, BOM,
-// non-breaking spaces — that look identical on screen but break a plain
+// routinely embeds invisible characters - RTL/bidi control marks, BOM,
+// non-breaking spaces - that look identical on screen but break a plain
 // substring match, since a pattern typed by hand won't contain them. Strip
 // those and collapse whitespace before comparing, on both sides.
 // Zero-width spaces/joiners (U+200B-200D), bidi marks/embeddings/overrides
@@ -58,7 +58,7 @@ function normalizeForMatch(text) {
     .toLowerCase();
 }
 
-// Rule matching — among every exact/contains rule that matches this
+// Rule matching - among every exact/contains rule that matches this
 // description, the most recently created one wins (same recency principle
 // as once-vs-always below): an old `exact` rule doesn't get to permanently
 // outrank a `contains` rule you set up afterward just because "exact beats
@@ -79,13 +79,13 @@ function findCategoryMerge(category, rules) {
 
 // A "once" rule (matchType 'transaction', tied to this row's real id) and an
 // "always" rule (exact/contains, tied to the description) can both match the
-// same transaction — whichever was created more recently wins, so setting
+// same transaction - whichever was created more recently wins, so setting
 // "Always" after a prior "Once" actually overrides it instead of staying
 // stuck on the older once-off value.
 function resolveAttribute(t, attribute, rules) {
   const attrRules = rules.filter((r) => r.attribute === attribute);
   // Guards against any pre-existing duplicate Once rules (from before this
-  // was deduped on create) — picks the most recently created one rather than
+  // was deduped on create) - picks the most recently created one rather than
   // whichever happens to come first by id order.
   const txnMatch = attrRules
     .filter((r) => r.matchType === 'transaction' && r.transactionId === t.id)

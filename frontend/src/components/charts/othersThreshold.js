@@ -1,6 +1,6 @@
 // Below-threshold categories get folded into an "Others" slice when grouping
 // is turned on. One default cutoff per metric, since amount and transaction
-// count aren't on the same scale — editable per-session from the chart controls.
+// count aren't on the same scale - editable per-session from the chart controls.
 export const DEFAULT_OTHERS_THRESHOLD = {
   amount: 200,
   count: 2,

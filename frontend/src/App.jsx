@@ -17,7 +17,7 @@ const PAGES = {
   'load-data': LoadDataPage,
 };
 
-// Which pages the upload selector is relevant to — Categories/Load Data/Home
+// Which pages the upload selector is relevant to - Categories/Load Data/Home
 // don't filter by upload, so showing it there would just be noise.
 ChartsPage.showUploadSelector = true;
 TransactionsPage.showUploadSelector = true;

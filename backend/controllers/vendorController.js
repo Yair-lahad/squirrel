@@ -1,6 +1,4 @@
-const vendorSource = require('../logic/sources/vendorSource');
-const transactionService = require('../logic/transactions/transactionService');
-const ruleService = require('../logic/categorization/ruleService');
+const ingestService = require('../core/ingestion/ingestService');
 
 async function fetchVendor(req, res) {
   const { id, password, card6Digits, startDate } = req.body || {};
@@ -10,9 +8,7 @@ async function fetchVendor(req, res) {
   }
 
   try {
-    const transactions = await vendorSource.fetchTransactions({ id, password, card6Digits, startDate });
-    const stored = await transactionService.storeAndGetIds(transactions, 'vendor', `Isracard fetch (from ${startDate})`);
-    res.json(await ruleService.applyRulesTo(stored));
+    res.json(await ingestService.ingestVendor({ id, password, card6Digits, startDate }));
   } catch (err) {
     res.status(502).json({ error: err.message || 'Fetch failed' });
   }

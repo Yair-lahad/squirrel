@@ -40,7 +40,7 @@ function ruleForEdit(attribute, scope, t, value) {
 }
 
 // t.date is stored as ISO ('YYYY-MM-DD') and displayed day-first, but a
-// search typed by hand could be either style — matching against both means
+// search typed by hand could be either style - matching against both means
 // either one finds the row.
 function matchesSearch(t, query) {
   if (!query) return true;

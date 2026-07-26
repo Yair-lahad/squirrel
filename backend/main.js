@@ -1,3 +1,7 @@
+// Request flow: route (below) -> controllers/ (HTTP only) -> core/ (the
+// actual logic + persistence) -> agents/ (only when a feature needs AI -
+// core services call into agents/, controllers never do). See README.md
+// "Backend" for the full breakdown.
 require('dotenv').config({ quiet: true });
 
 const express = require('express');
@@ -26,7 +30,7 @@ app.use(categoriesRoute);
 app.use(transactionsRoute);
 
 // Client-side routing (no # in the URL) means the browser can request paths
-// like /charts directly (e.g. on refresh) that don't exist as files — fall
+// like /charts directly (e.g. on refresh) that don't exist as files - fall
 // back to index.html so React Router-less client routing can handle them.
 app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));

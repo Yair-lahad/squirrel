@@ -1,6 +1,6 @@
 // Rule-based placeholder for what will eventually be an AI-generated advisor.
 // Takes the already-loaded transactions (the backend has no persistence of
-// its own) and a category, and returns a handful of structured insights —
+// its own) and a category, and returns a handful of structured insights -
 // formatting/labels are the frontend's job, this just computes the numbers.
 
 const DAY_MS = 1000 * 60 * 60 * 24;
@@ -54,11 +54,11 @@ function getAdvice({ categories, transactions }) {
   return insights;
 }
 
-// Placeholder for free-form Q&A — real reasoning (and real insights, not
+// Placeholder for free-form Q&A - real reasoning (and real insights, not
 // just an acknowledgement) is future work, likely once this is backed by
 // an actual AI-generated response instead of rules.
 function answerQuestion({ question }) {
-  return { answer: `Free-form answers aren't wired up yet — you asked: "${question}".` };
+  return { answer: `Free-form answers aren't wired up yet - you asked: "${question}".` };
 }
 
 module.exports = { getAdvice, answerQuestion };

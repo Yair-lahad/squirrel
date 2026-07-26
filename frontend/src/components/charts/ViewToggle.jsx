@@ -3,7 +3,7 @@ import Select from '../ui/Select';
 const VIEWS = [
   { key: 'bar', label: 'Bar' },
   { key: 'pie', label: 'Pie' },
-  { key: 'bubbles', label: 'Bubbles' },
+  { key: 'bubble', label: 'Bubble' },
 ];
 
 export default function ViewToggle({ view, onChange }) {

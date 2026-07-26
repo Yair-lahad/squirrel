@@ -7,3 +7,9 @@ export function uploadTransactions(transactions, label) {
     body: JSON.stringify({ transactions, label }),
   }).then(parseJson);
 }
+
+export function uploadDocFile(file) {
+  const body = new FormData();
+  body.append('file', file);
+  return fetch('/api/fetch/upload-doc', { method: 'POST', body }).then(parseJson);
+}

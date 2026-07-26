@@ -1,5 +1,5 @@
 // Each category as a circle sized by its share of the metric (area-proportional,
-// via sqrt) — a more visceral "this one's big" read than a bar's length.
+// via sqrt) - a more visceral "this one's big" read than a bar's length.
 import { formatCurrency } from '../../core/format';
 import CashStackIcon from '../icons/CashStackIcon';
 import CoinsIcon from '../icons/CoinsIcon';
@@ -7,7 +7,7 @@ import CoinsIcon from '../icons/CoinsIcon';
 const MIN_DIAMETER = 64;
 const MAX_DIAMETER = 200;
 
-// Below this, a fanned stack of bills reads as an exaggeration — coins fit better.
+// Below this, a fanned stack of bills reads as an exaggeration - coins fit better.
 const CASH_STACK_THRESHOLD = 100;
 
 function diameterFor(value, maxValue) {

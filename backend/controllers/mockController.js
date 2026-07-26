@@ -1,10 +1,7 @@
-const mockSource = require('../logic/sources/mockSource');
-const transactionService = require('../logic/transactions/transactionService');
-const ruleService = require('../logic/categorization/ruleService');
+const ingestService = require('../core/ingestion/ingestService');
 
 async function fetchMock(req, res) {
-  const stored = await transactionService.storeAndGetIds(mockSource.getTransactions(), 'mock', 'Mock data');
-  res.json(await ruleService.applyRulesTo(stored));
+  res.json(await ingestService.ingestMock());
 }
 
 module.exports = { fetchMock };

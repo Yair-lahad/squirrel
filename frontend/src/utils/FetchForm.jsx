@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { fetchVendor } from '../routes/vendor';
 import { fetchMock } from '../routes/mock';
+import Button from '../components/ui/Button';
 
 const FIELDS = [
   { key: 'id', label: 'ID', type: 'text' },
@@ -54,8 +55,8 @@ export default function FetchForm({ onLoaded }) {
           </div>
         ))}
         <div className="form-actions">
-          <button type="submit">Fetch</button>
-          <button type="button" onClick={handleMock}>Load mock data</button>
+          <Button type="submit">Fetch</Button>
+          <Button type="button" variant="ghost" onClick={handleMock}>Load mock data</Button>
         </div>
         <p className={`status${status.error ? ' error' : ''}`}>{status.message}</p>
       </form>

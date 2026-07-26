@@ -1,4 +1,4 @@
-const ruleService = require('../logic/categorization/ruleService');
+const ruleService = require('../core/categorization/ruleService');
 
 const MATCH_TYPES = ['contains', 'exact', 'category', 'transaction'];
 const ATTRIBUTES = ['category', 'title'];

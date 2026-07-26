@@ -8,6 +8,7 @@ import SummaryHeader from './SummaryHeader';
 import CategoryScatterChart from './charts/CategoryScatterChart';
 import { OTHERS_LABEL } from './charts/othersThreshold';
 import Advisor from '../agents/advisor/Advisor';
+import Button from './ui/Button';
 
 export default function CategoryDetail({ categories, transactions, onBack }) {
   const detail = useAnalytics(() => fetchCategoryDetail(transactions, categories), [transactions, categories]);
@@ -23,7 +24,7 @@ export default function CategoryDetail({ categories, transactions, onBack }) {
       <SummaryHeader
         title={title}
         transactions={items}
-        actions={<button type="button" className="back-link" onClick={onBack}>← Back to charts</button>}
+        actions={<Button type="button" className="btn-pill back-link" onClick={onBack}>← Back to charts</Button>}
       />
       {isGroup && <p className="category-detail-subtitle">{categories.join(', ')}</p>}
       <div className="category-detail-layout">

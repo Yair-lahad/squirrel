@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import Pagination from './Pagination';
 
-// Shared table shell for the transactions list and the rules list — both are
+// Shared table shell for the transactions list and the rules list - both are
 // a "#"-numbered grid of columns with an optional sortable header and an
 // optional pagination footer. Each column owns its own cell rendering
 // (`render`), so the caller keeps full control over inline editing, custom
@@ -20,7 +20,7 @@ export default function Table({
 }) {
   const columnCount = columns.length + 1;
 
-  // Locks the card to the tallest height it's ever needed — search/filtering
+  // Locks the card to the tallest height it's ever needed - search/filtering
   // down to a handful of rows (or one) then shrinks the box instead of the
   // page jumping underneath it. Only ever grows, so a bigger dataset (or
   // clearing the search) still fits. Measured on the inner wrapper (not the
@@ -28,7 +28,7 @@ export default function Table({
   // min-height the card is currently holding.
   //
   // Picking a new "rows per page" is the one case that should shrink instead
-  // of staying locked — it's a deliberate resize, not a filter — so the lock
+  // of staying locked - it's a deliberate resize, not a filter - so the lock
   // resets whenever pageSize changes.
   const contentRef = useRef(null);
   const [minHeight, setMinHeight] = useState(0);

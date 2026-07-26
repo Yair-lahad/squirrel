@@ -14,7 +14,7 @@ async function ensureCategories(names) {
 }
 
 // A 'transaction' (Once) rule only stores the transaction's id, not its
-// description — joining here lets the rules list show the actual text the
+// description - joining here lets the rules list show the actual text the
 // rule is pinned to instead of a bare "#123".
 async function listRules() {
   const { rows } = await pool.query(`
@@ -33,7 +33,7 @@ async function getRuleById(id) {
 }
 
 // Looked up directly from the transactions table rather than relying on
-// whatever's currently loaded in the frontend — a "once" rule's transaction
+// whatever's currently loaded in the frontend - a "once" rule's transaction
 // may belong to a different upload than the one the user has open right now.
 async function getTransactionDescription(transactionId) {
   const { rows } = await pool.query('SELECT description FROM transactions WHERE id = $1', [transactionId]);
@@ -88,7 +88,7 @@ async function insertCategory(name) {
 
 // Renaming a category also has to repoint every rule that references the old
 // name (both as the category a rule assigns, and as the merge-from pattern
-// on a 'category'-matchType rule) — done in one transaction so a crash
+// on a 'category'-matchType rule) - done in one transaction so a crash
 // mid-way can't leave rules pointing at a name that no longer exists.
 async function updateCategoryName(id, newName) {
   const client = await pool.connect();
@@ -121,7 +121,7 @@ async function updateCategoryName(id, newName) {
 
 // Only the "value" side counts as in-use: that's the category actively
 // assigned to transactions going forward. A merge rule's "pattern" side is
-// the category being phased OUT — blocking deletion there would make it
+// the category being phased OUT - blocking deletion there would make it
 // impossible to ever clean up a category after merging it away, which
 // defeats the point of the merge.
 async function categoryInUse(name) {

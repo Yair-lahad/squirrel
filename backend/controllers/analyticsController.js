@@ -1,4 +1,4 @@
-const analytics = require('../logic/analytics/aggregations');
+const analytics = require('../core/analytics/aggregations');
 
 function requireTransactions(req, res) {
   const { transactions } = req.body || {};

@@ -4,13 +4,13 @@ import Select from './ui/Select';
 
 const NEW_OPTION = '__new__';
 
-// A real dropdown of existing categories — "+ New category" is always the
+// A real dropdown of existing categories - "+ New category" is always the
 // first choice, and picking it swaps the same slot to a text input in place
 // (no popup/tooltip). Mount fresh (e.g. via `key`) to reset back to select
 // mode after the value it represents changes out from under it.
 //
 // onChange fires on every keystroke/selection; onCommit (optional) fires when
-// a value should be treated as final — immediately on picking an existing
+// a value should be treated as final - immediately on picking an existing
 // category, or on blur/Enter while typing a new one.
 export default function CategorySelect({ id, value, categories, onChange, onCommit }) {
   const [creating, setCreating] = useState(categories.length === 0);

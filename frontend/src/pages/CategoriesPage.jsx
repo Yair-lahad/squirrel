@@ -20,7 +20,7 @@ import SectionHeading from '../components/ui/SectionHeading';
 import { usePagination } from '../hooks/usePagination';
 
 // These rules are always "Always" scope (they match by description, so they
-// keep applying to future transactions too) — a rule scoped to just one
+// keep applying to future transactions too) - a rule scoped to just one
 // transaction ("Once") is only created via the inline edit in the
 // transactions table, not from this form.
 const MATCH_TYPES_BY_ATTRIBUTE = {
@@ -36,7 +36,7 @@ const MATCH_TYPES_BY_ATTRIBUTE = {
 };
 
 // Toggling scope (Once <-> Always) directly from this list is disabled for
-// now — Once -> Always is well-defined, but Always -> Once isn't (an always
+// now - Once -> Always is well-defined, but Always -> Once isn't (an always
 // rule matches by description alone, so there's no single transaction id to
 // pin a "once" rule to). Until that's resolved, the Scope column is a plain
 // label rather than an interactive toggle.
@@ -77,7 +77,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
     fetchRules().then(async (latestRules) => {
       setRules(latestRules);
       // Rules may have been created in a previous visit/session, after the
-      // currently cached transactions were fetched — resync on every visit,
+      // currently cached transactions were fetched - resync on every visit,
       // not just right after creating a rule, so stale categories don't linger.
       // Applying rules also registers every category seen into the DB catalog,
       // so fetch the catalog again afterward to pick up anything just added.
@@ -89,9 +89,9 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   }, []);
 
   // A category only gets a DB row (and therefore an id/rename/delete controls)
-  // once it's been used in a rule — transaction-only or rule-only names still
+  // once it's been used in a rule - transaction-only or rule-only names still
   // need to show up so they stay pickable in CategorySelect. Only category
-  // rules contribute here — a title rule's value is a title, not a category.
+  // rules contribute here - a title rule's value is a title, not a category.
   const categoryEntries = useMemo(() => {
     const byName = new Map();
     transactions.forEach((t) => t.category && byName.set(t.category, { name: t.category, id: null }));
@@ -136,16 +136,16 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   }
 
   async function handleDeleteCategory(category) {
-    // The backend can only see rule usage — it has no idea whether currently
+    // The backend can only see rule usage - it has no idea whether currently
     // loaded transactions still carry this category (they're never persisted
     // server-side). Deleting one of those would "succeed" but get silently
     // re-created the next time rules are applied to those same transactions,
-    // so check client-side first and never call the API for that case —
+    // so check client-side first and never call the API for that case -
     // otherwise the buttons flash away and come back on refresh.
     const usedByLoadedTransactions = transactions.filter((t) => t.category === category.name).length;
     if (usedByLoadedTransactions > 0) {
       setGridStatus({
-        message: `"${category.name}" is used by ${usedByLoadedTransactions} loaded transaction(s) — it can't be deleted while they're loaded.`,
+        message: `"${category.name}" is used by ${usedByLoadedTransactions} loaded transaction(s) - it can't be deleted while they're loaded.`,
         error: true,
       });
       return;
@@ -332,7 +332,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
         rows={paginatedRules}
         rowStart={rulesPageStart}
         rowKey={(r) => r.id}
-        emptyMessage={rules.length ? 'No rules match your search.' : 'No rules yet — transactions keep their source category until you add one.'}
+        emptyMessage={rules.length ? 'No rules match your search.' : 'No rules yet - transactions keep their source category until you add one.'}
         pagination={{
           pageSize: rulesPageSize,
           onPageSizeChange: setRulesPageSize,

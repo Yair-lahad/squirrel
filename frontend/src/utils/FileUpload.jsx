@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { uploadTransactions } from '../routes/upload';
+import { useRef, useState } from 'react';
+import { uploadTransactions, uploadDocFile } from '../routes/upload';
+import Button from '../components/ui/Button';
 
 export default function FileUpload({ onLoaded }) {
+  const inputRef = useRef(null);
   const [status, setStatus] = useState({ message: '', error: false });
 
   async function handleChange(e) {
@@ -9,26 +11,37 @@ export default function FileUpload({ onLoaded }) {
     e.target.value = '';
     if (!file) return;
 
-    setStatus({ message: 'Uploading…', error: false });
+    const isJson = file.name.toLowerCase().endsWith('.json');
+    setStatus({ message: 'Processing file…', error: false });
     try {
-      const transactions = JSON.parse(await file.text());
-      if (!Array.isArray(transactions)) {
-        throw new Error('File must contain a JSON array of transactions');
-      }
-      await uploadTransactions(transactions, file.name);
+      const stored = isJson ? await uploadJsonFile(file) : await uploadDocFile(file);
       await onLoaded();
-      setStatus({ message: `Loaded ${transactions.length} transactions from ${file.name}.`, error: false });
+      setStatus({ message: `Loaded ${stored.length} transactions from ${file.name}.`, error: false });
     } catch (err) {
       setStatus({ message: err.message, error: true });
     }
   }
 
+  async function uploadJsonFile(file) {
+    const transactions = JSON.parse(await file.text());
+    if (!Array.isArray(transactions)) {
+      throw new Error('File must contain a JSON array of transactions');
+    }
+    return uploadTransactions(transactions, file.name);
+  }
+
   return (
     <div className="inline-loader">
-      <label className="file-upload-label">
+      <Button type="button" variant="ghost" onClick={() => inputRef.current?.click()}>
         Upload a transactions file
-        <input type="file" accept="application/json,.json" onChange={handleChange} />
-      </label>
+      </Button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/json,.json,.docx"
+        onChange={handleChange}
+        className="visually-hidden"
+      />
       <span className={`status${status.error ? ' error' : ''}`}>{status.message}</span>
     </div>
   );

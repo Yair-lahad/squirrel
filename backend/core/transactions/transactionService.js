@@ -1,10 +1,10 @@
 const { pool } = require('../../db');
 
 // Every read below selects these exact columns rather than `SELECT *`:
-// - date is cast to a plain 'YYYY-MM-DD' string — the driver otherwise parses
+// - date is cast to a plain 'YYYY-MM-DD' string - the driver otherwise parses
 //   the DATE column into a JS Date object using a UTC/local conversion that
 //   shifts the calendar day, breaking both display and month-grouping.
-// - amount is cast to float8 — NUMERIC otherwise comes back as a string,
+// - amount is cast to float8 - NUMERIC otherwise comes back as a string,
 //   silently turning `total += amount` into string concatenation (NaN).
 // - category falls back to 'Uncategorized' for rows stored before that
 //   column existed, or from a source that never set one.
@@ -18,16 +18,28 @@ const SELECT_COLUMNS = `
   upload_id
 `;
 
-// Plain insert, no content-based dedup — every call adds fresh rows, and
-// each row's own `id` (returned here) is what identifies it. Re-storing the
-// same data (e.g. re-uploading a file) creates new rows rather than
-// matching existing ones. Every call is also its own "upload" — statement
-// periods run mid-month to mid-month, not on calendar boundaries, so this
-// (not the calendar month) is what the frontend selector groups by.
-async function storeAndGetIds(transactions, source, label) {
+// Every call is its own "upload" - statement periods run mid-month to
+// mid-month, not on calendar boundaries, so this (not the calendar month) is
+// what the frontend selector groups by. No content-based dedup between
+// *transactions* - two rows that happen to share the same date/description/
+// amount (e.g. two identical scooter rides on the same day) are still two
+// separate, valid rows.
+//
+// Whole-*upload* dedup is a separate concern, handled by contentHash: if the
+// caller passes a hash of the raw source content (see findUploadByContentHash)
+// and it matches a previous upload, that upload is reused rather than
+// re-inserting the same file's transactions a second time.
+async function storeAndGetIds(transactions, source, label, contentHash) {
+  if (contentHash) {
+    const existing = await findUploadByContentHash(contentHash);
+    if (existing) {
+      return getTransactions({ uploadId: existing.id });
+    }
+  }
+
   const { rows: [upload] } = await pool.query(
-    'INSERT INTO uploads (label, source) VALUES ($1, $2) RETURNING id',
-    [label || source, source]
+    'INSERT INTO uploads (label, source, content_hash) VALUES ($1, $2, $3) RETURNING id',
+    [label || source, source, contentHash || null]
   );
 
   const stored = [];
@@ -43,7 +55,12 @@ async function storeAndGetIds(transactions, source, label) {
   return stored;
 }
 
-// The bundled sample file is static data, not a real statement period — reusing
+async function findUploadByContentHash(contentHash) {
+  const { rows } = await pool.query('SELECT id FROM uploads WHERE content_hash = $1', [contentHash]);
+  return rows[0] || null;
+}
+
+// The bundled sample file is static data, not a real statement period - reusing
 // its existing upload (rather than inserting a fresh duplicate row on every
 // click of "Load sample file") keeps clicking it again from spawning another
 // identical entry in the upload selector.
@@ -82,7 +99,7 @@ async function getTransactions({ uploadId } = {}) {
 // selector without pulling every transaction row just to find that out.
 // end_date uses the 90th percentile of dates rather than a literal MAX, so
 // a single stray old row (e.g. an ongoing installment charge from months
-// earlier) doesn't distort it — the transactions themselves are untouched,
+// earlier) doesn't distort it - the transactions themselves are untouched,
 // only this label.
 async function getUploads() {
   const { rows } = await pool.query(`
@@ -95,9 +112,9 @@ async function getUploads() {
     FROM uploads u
     LEFT JOIN transactions t ON t.upload_id = u.id
     GROUP BY u.id
-    ORDER BY u.id DESC
+    ORDER BY end_date DESC NULLS LAST, u.id DESC
   `);
   return rows;
 }
 
-module.exports = { storeAndGetIds, findUploadBySource, getAll, getTransactions, getUploads };
+module.exports = { storeAndGetIds, findUploadBySource, findUploadByContentHash, getAll, getTransactions, getUploads };

@@ -1,5 +1,5 @@
-const transactionService = require('../logic/transactions/transactionService');
-const ruleService = require('../logic/categorization/ruleService');
+const transactionService = require('../core/transactions/transactionService');
+const ruleService = require('../core/categorization/ruleService');
 
 async function list(req, res) {
   const { all, uploadId } = req.query;

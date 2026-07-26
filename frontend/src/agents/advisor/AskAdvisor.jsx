@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fetchAdvisorAnswer } from '../../routes/advisor';
+import Button from '../../components/ui/Button';
 
 export default function AskAdvisor({ categories, transactions }) {
   const [question, setQuestion] = useState('');
@@ -26,7 +27,7 @@ export default function AskAdvisor({ categories, transactions }) {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
-        <button type="submit" disabled={loading}>{loading ? '…' : 'Ask'}</button>
+        <Button type="submit" disabled={loading}>{loading ? '…' : 'Ask'}</Button>
       </div>
       {answer && <p className="advisor-ask-answer">{answer}</p>}
     </form>

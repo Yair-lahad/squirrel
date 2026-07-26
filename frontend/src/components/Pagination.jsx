@@ -1,7 +1,8 @@
 import { PAGE_SIZE_OPTIONS } from '../hooks/usePagination';
+import Button from './ui/Button';
 
 // Rows-per-page and Prev/Next live together in one control, meant to sit
-// below a table — pairing the pair up here keeps every table's pagination
+// below a table - pairing the pair up here keeps every table's pagination
 // looking and behaving the same.
 export default function Pagination({ pageSize, onPageSizeChange, page, onPageChange, pageCount }) {
   return (
@@ -16,9 +17,9 @@ export default function Pagination({ pageSize, onPageSizeChange, page, onPageCha
       </label>
       {pageSize !== 'All' && (
         <span className="table-pagination">
-          <button type="button" disabled={page === 0} onClick={() => onPageChange(page - 1)}>‹ Prev</button>
+          <Button type="button" variant="ghost" className="btn-pill" disabled={page === 0} onClick={() => onPageChange(page - 1)}>‹ Prev</Button>
           Page {page + 1} of {pageCount}
-          <button type="button" disabled={page >= pageCount - 1} onClick={() => onPageChange(page + 1)}>Next ›</button>
+          <Button type="button" variant="ghost" className="btn-pill" disabled={page >= pageCount - 1} onClick={() => onPageChange(page + 1)}>Next ›</Button>
         </span>
       )}
     </div>

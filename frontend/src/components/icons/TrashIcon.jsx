@@ -1,4 +1,4 @@
-// Shared trash/delete icon (Lucide's "trash-2") — use wherever a delete
+// Shared trash/delete icon (Lucide's "trash-2") - use wherever a delete
 // action needs an icon instead of text, so every delete control looks the same.
 export default function TrashIcon({ size = 16, className, ...props }) {
   return (

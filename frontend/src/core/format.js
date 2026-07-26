@@ -14,7 +14,7 @@ export function formatGap(days) {
 }
 
 // t.date arrives as a plain 'YYYY-MM-DD' string (see transactionService's
-// SELECT_COLUMNS) — parsed here by splitting rather than `new Date()`, since
+// SELECT_COLUMNS) - parsed here by splitting rather than `new Date()`, since
 // that would reinterpret it in the browser's local timezone and can shift
 // the displayed day.
 export function formatDate(isoDate) {
@@ -28,7 +28,7 @@ export function formatDayMonth(date) {
 }
 
 // A period is labeled by its last month only (e.g. "Jun 26"), not a
-// start-end range — a range computed two different ways (client-side
+// start-end range - a range computed two different ways (client-side
 // literal min/max vs a backend-trimmed range) is how the headline and the
 // upload selector ended up disagreeing; showing only the end avoids that.
 export function formatMonthYear(date) {

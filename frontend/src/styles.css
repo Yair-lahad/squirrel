@@ -6,7 +6,7 @@
   /* Single source of truth for color: every page/component pulls from these.
      Chart.js can't read CSS variables directly (it draws to canvas), so
      core/palette.js reads these same custom properties at runtime via
-     getComputedStyle — one definition, two consumers. */
+     getComputedStyle - one definition, two consumers. */
   --color-surface: #fcfcfb;
   --color-text-primary: #0b0b0b;
   --color-text-secondary: #52514e;
@@ -19,7 +19,7 @@
   --color-error: #d33;
   --color-bubble-bg: #eef4fb;
 
-  /* fixed categorical order — never cycled/reassigned by rank */
+  /* fixed categorical order - never cycled/reassigned by rank */
   --chart-1: #2a78d6;
   --chart-2: #1baf7a;
   --chart-3: #eda100;
@@ -55,14 +55,26 @@ nav.top-nav {
   padding: 1rem 1.25rem;
 }
 
-.file-upload-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+.inline-loader > .btn {
+  flex-shrink: 0;
 }
 
-.file-upload-label input[type='file'] {
-  max-width: 220px;
+.inline-loader .status {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 nav.top-nav a {
@@ -184,7 +196,7 @@ button {
   cursor: pointer;
 }
 
-/* Shared UI components (components/ui/*) — Button, Input, Select */
+/* Shared UI components (components/ui/*) - Button, Input, Select */
 
 .btn {
   padding: 0.55rem 1.2rem;
@@ -242,6 +254,12 @@ button {
   justify-content: center;
   padding: 0.4rem;
   line-height: 0;
+}
+
+.btn-pill {
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
 }
 
 .input,
@@ -385,18 +403,7 @@ button {
 
 .back-link {
   margin-left: auto;
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem;
-  color: #fff;
-  font-size: 0.85rem;
-  cursor: pointer;
   align-self: center;
-}
-
-.back-link:hover {
-  opacity: 0.9;
 }
 
 .summary-header {
@@ -514,7 +521,7 @@ button {
   box-sizing: border-box;
 }
 
-/* the label is never truncated — it drives the chip's width. Only the
+/* the label is never truncated - it drives the chip's width. Only the
    value/detail rows (below) are allowed to shrink and ellipsize. */
 .advisor-chip-label {
   margin-top: -2.1rem;
@@ -936,16 +943,6 @@ tbody tr:last-child td {
   line-height: 1;
 }
 
-.category-add-button {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem;
-  color: #fff;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
 .category-add-form {
   display: flex;
   gap: 0.5rem;
@@ -957,24 +954,6 @@ tbody tr:last-child td {
   border-radius: 6px;
   border: 1px solid var(--color-border);
   font-size: 0.85rem;
-}
-
-.category-add-form button {
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-}
-
-.category-add-form button[type='submit'] {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-}
-
-.category-add-form button[type='button'] {
-  background: none;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
 }
 
 .category-grid-section {

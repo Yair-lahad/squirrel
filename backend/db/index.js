@@ -30,7 +30,7 @@ async function migrateLegacyTables() {
 }
 
 // Every load (sample file, mock, vendor fetch, upload) creates one `uploads`
-// row, and every transaction it produces is tagged with that upload's id —
+// row, and every transaction it produces is tagged with that upload's id -
 // this is what lets the frontend pick "which file" to view, since real
 // statement periods run mid-month to mid-month, not on calendar boundaries.
 async function migrateUploadsTable() {
@@ -44,7 +44,15 @@ async function migrateUploadsTable() {
   `);
   await pool.query('ALTER TABLE transactions ADD COLUMN IF NOT EXISTS upload_id INTEGER REFERENCES uploads(id)');
 
-  // Rows stored before this column existed have no upload_id — bucket each
+  // Lets storeAndGetIds recognize "this exact file was already uploaded" (a
+  // hash of the raw file content) and reuse that upload instead of creating
+  // a duplicate. Partial index because mock/vendor/sample loads don't set one.
+  await pool.query('ALTER TABLE uploads ADD COLUMN IF NOT EXISTS content_hash TEXT');
+  await pool.query(
+    'CREATE UNIQUE INDEX IF NOT EXISTS uploads_content_hash_key ON uploads (content_hash) WHERE content_hash IS NOT NULL'
+  );
+
+  // Rows stored before this column existed have no upload_id - bucket each
   // distinct source they came from into one legacy "upload" so they still
   // show up in the selector.
   const { rows: orphanSources } = await pool.query(
@@ -85,7 +93,7 @@ async function init() {
   await pool.query('ALTER TABLE transactions ADD COLUMN IF NOT EXISTS category TEXT');
 
   // No content-based dedup: every load is a plain insert, and each row's
-  // own `id` is what makes it unique — two transactions that happen to
+  // own `id` is what makes it unique - two transactions that happen to
   // share the same date/description/amount (e.g. two identical scooter
   // rides on the same day) are still two separate, valid rows.
   await pool.query('ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_date_description_amount_source_key');

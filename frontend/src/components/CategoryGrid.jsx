@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { categoryVisual } from '../core/categoryVisuals';
 import TrashIcon from './icons/TrashIcon';
 import SectionHeading from './ui/SectionHeading';
+import Button from './ui/Button';
 
 function CategoryChip({ category, onRename, onDelete }) {
   const { icon, initial, color } = categoryVisual(category.name);
@@ -103,13 +104,13 @@ export default function CategoryGrid({
                 if (e.key === 'Escape') onAddCancel();
               }}
             />
-            <button type="submit">Add</button>
-            <button type="button" onClick={onAddCancel}>Cancel</button>
+            <Button type="submit" className="btn-pill">Add</Button>
+            <Button type="button" variant="ghost" className="btn-pill" onClick={onAddCancel}>Cancel</Button>
           </form>
         ) : (
-          <button type="button" className="category-add-button" onClick={onAddClick}>
+          <Button type="button" className="btn-pill" onClick={onAddClick}>
             + New category
-          </button>
+          </Button>
         )}
       </div>
       {categories.length > 0 && (

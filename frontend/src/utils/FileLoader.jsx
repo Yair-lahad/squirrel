@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fetchFile } from '../routes/file';
+import Button from '../components/ui/Button';
 
 export default function FileLoader({ onLoaded }) {
   const [status, setStatus] = useState('');
@@ -13,7 +14,7 @@ export default function FileLoader({ onLoaded }) {
 
   return (
     <div className="inline-loader">
-      <button type="button" onClick={handleLoad}>Load sample file</button>
+      <Button type="button" variant="ghost" onClick={handleLoad}>Load sample file</Button>
       <span className="status">{status}</span>
     </div>
   );

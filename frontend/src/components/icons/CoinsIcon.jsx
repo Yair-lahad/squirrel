@@ -1,4 +1,4 @@
-// Two overlapping gold coins — used for smaller amounts, where a stack of
+// Two overlapping gold coins - used for smaller amounts, where a stack of
 // bills would overstate it. Fixed gold tones, matching CashStackIcon's fixed
 // green rather than inheriting currentColor.
 export default function CoinsIcon({ size = 16, className, ...props }) {

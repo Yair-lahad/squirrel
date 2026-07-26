@@ -1,4 +1,4 @@
-// Isracard is the current vendor implementation — israeli-bank-scrapers
+// Isracard is the current vendor implementation - israeli-bank-scrapers
 // supports other Israeli banks/cards too, so swapping CompanyTypes.isracard
 // for another one here (or making it configurable) is the extension point.
 const { createScraper, CompanyTypes } = require('israeli-bank-scrapers');
