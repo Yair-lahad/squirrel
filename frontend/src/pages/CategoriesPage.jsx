@@ -12,6 +12,12 @@ import {
 import CategorySelect from '../components/CategorySelect';
 import CategoryGrid from '../components/CategoryGrid';
 import Table from '../components/Table';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Select from '../components/ui/Select';
+import TrashIcon from '../components/icons/TrashIcon';
+import SectionHeading from '../components/ui/SectionHeading';
+import { usePagination } from '../hooks/usePagination';
 
 // These rules are always "Always" scope (they match by description, so they
 // keep applying to future transactions too) — a rule scoped to just one
@@ -34,6 +40,18 @@ const MATCH_TYPES_BY_ATTRIBUTE = {
 // rule matches by description alone, so there's no single transaction id to
 // pin a "once" rule to). Until that's resolved, the Scope column is a plain
 // label rather than an interactive toggle.
+function ruleMatchText(rule) {
+  return rule.matchType === 'transaction'
+    ? (rule.transactionDescription ?? `transaction #${rule.transactionId} (no longer in the data)`)
+    : rule.pattern;
+}
+
+function matchesRuleSearch(rule, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return ruleMatchText(rule)?.toLowerCase().includes(q) || rule.value?.toLowerCase().includes(q);
+}
+
 function RuleScopeCell({ rule }) {
   if (rule.matchType === 'category') return <span className="rule-scope-label">Merge</span>;
   if (rule.matchType === 'transaction') return <span className="rule-scope-label">Once</span>;
@@ -53,6 +71,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   const [formKey, setFormKey] = useState(0);
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [ruleSearch, setRuleSearch] = useState('');
 
   useEffect(() => {
     fetchRules().then(async (latestRules) => {
@@ -84,6 +103,21 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   }, [transactions, rules, categories]);
 
   const existingCategories = useMemo(() => categoryEntries.map((c) => c.name), [categoryEntries]);
+
+  const filteredRules = useMemo(
+    () => rules.filter((r) => matchesRuleSearch(r, ruleSearch)),
+    [rules, ruleSearch]
+  );
+
+  const {
+    pageSize: rulesPageSize,
+    setPageSize: setRulesPageSize,
+    page: rulesPage,
+    setPage: setRulesPage,
+    pageCount: rulesPageCount,
+    pageStart: rulesPageStart,
+    paginated: paginatedRules,
+  } = usePagination(filteredRules);
 
   async function refreshAfterCategoryChange() {
     setRules(await fetchRules());
@@ -184,49 +218,32 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
   return (
     <div className="categories-page">
-      <div className="category-add">
-        {addingCategory ? (
-          <form onSubmit={handleCreateCategory} className="category-add-form">
-            <input
-              autoFocus
-              autoComplete="off"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="New category name"
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') cancelAddCategory();
-              }}
-            />
-            <button type="submit">Add</button>
-            <button type="button" onClick={cancelAddCategory}>Cancel</button>
-          </form>
-        ) : (
-          <button type="button" className="category-add-button" onClick={() => setAddingCategory(true)}>
-            + New category
-          </button>
-        )}
-      </div>
-
       <CategoryGrid
         categories={categoryEntries}
         onRename={handleRenameCategory}
         onDelete={handleDeleteCategory}
+        addingCategory={addingCategory}
+        newCategoryName={newCategoryName}
+        onNewCategoryNameChange={setNewCategoryName}
+        onAddClick={() => setAddingCategory(true)}
+        onAddSubmit={handleCreateCategory}
+        onAddCancel={cancelAddCategory}
       />
       {gridStatus.message && <p className={`status${gridStatus.error ? ' error' : ''}`}>{gridStatus.message}</p>}
 
-      <section id="rule-form-panel">
+      <section id="rule-form-panel" className="rule-form-panel">
+        <SectionHeading>Add a rule</SectionHeading>
         <form onSubmit={handleSubmit}>
-          <h2>Add a rule</h2>
           <div className="form-row">
             <label htmlFor="attribute">Sets</label>
-            <select id="attribute" value={form.attribute} onChange={updateAttribute}>
+            <Select id="attribute" value={form.attribute} onChange={updateAttribute}>
               <option value="category">Category</option>
               <option value="title">Title</option>
-            </select>
+            </Select>
           </div>
           <div className="form-row">
             <label htmlFor="matchType">Match type</label>
-            <select
+            <Select
               id="matchType"
               value={form.matchType}
               onChange={(e) => setForm((f) => ({ ...f, matchType: e.target.value, pattern: '' }))}
@@ -234,7 +251,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
               {MATCH_TYPES_BY_ATTRIBUTE[form.attribute].map((m) => (
                 <option key={m.value} value={m.value}>{m.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="form-row">
             <label htmlFor="pattern">{form.matchType === 'category' ? 'Merge from category' : 'Match text'}</label>
@@ -247,7 +264,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
                 onChange={(pattern) => setForm((f) => ({ ...f, pattern }))}
               />
             ) : (
-              <input
+              <Input
                 id="pattern"
                 required
                 autoComplete="off"
@@ -268,7 +285,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
                 onChange={(value) => setForm((f) => ({ ...f, value }))}
               />
             ) : (
-              <input
+              <Input
                 id="value"
                 required
                 autoComplete="off"
@@ -279,36 +296,50 @@ export default function CategoriesPage({ transactions, onLoaded }) {
             )}
           </div>
           <div className="form-actions">
-            <button type="submit">Add rule</button>
+            <Button type="submit">Add rule</Button>
           </div>
           {status.message && <p className={`status${status.error ? ' error' : ''}`}>{status.message}</p>}
         </form>
       </section>
 
+      <div className="table-toolbar rule-search-toolbar">
+        <SectionHeading className="rule-list-heading">Rules</SectionHeading>
+        <Input
+          type="text"
+          className="table-search"
+          autoComplete="off"
+          placeholder="Search match text or value…"
+          value={ruleSearch}
+          onChange={(e) => setRuleSearch(e.target.value)}
+        />
+      </div>
       <Table
         columns={[
           { key: 'attribute', label: 'Sets', render: (r) => r.attribute },
-          {
-            key: 'match',
-            label: 'Match text',
-            render: (r) =>
-              r.matchType === 'transaction'
-                ? (r.transactionDescription ?? `transaction #${r.transactionId} (no longer in the data)`)
-                : r.pattern,
-          },
+          { key: 'match', label: 'Match text', render: (r) => ruleMatchText(r) },
           { key: 'value', label: 'Value', render: (r) => r.value },
           { key: 'scope', label: 'Scope', render: (r) => <RuleScopeCell rule={r} /> },
           {
             key: 'actions',
             label: '',
             render: (r) => (
-              <button type="button" onClick={() => handleDelete(r.id)}>Delete</button>
+              <Button type="button" variant="danger" className="btn-icon" title="Delete rule" onClick={() => handleDelete(r.id)}>
+                <TrashIcon size={15} />
+              </Button>
             ),
           },
         ]}
-        rows={rules}
+        rows={paginatedRules}
+        rowStart={rulesPageStart}
         rowKey={(r) => r.id}
-        emptyMessage="No rules yet — transactions keep their source category until you add one."
+        emptyMessage={rules.length ? 'No rules match your search.' : 'No rules yet — transactions keep their source category until you add one.'}
+        pagination={{
+          pageSize: rulesPageSize,
+          onPageSizeChange: setRulesPageSize,
+          page: rulesPage,
+          onPageChange: setRulesPage,
+          pageCount: rulesPageCount,
+        }}
       />
     </div>
   );

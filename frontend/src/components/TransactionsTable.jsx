@@ -49,12 +49,13 @@ function matchesSearch(t, query) {
   return (
     t.title?.toLowerCase().includes(q) ||
     t.description?.toLowerCase().includes(q) ||
+    t.category?.toLowerCase().includes(q) ||
     t.date?.includes(q) ||
     formatDate(t.date).includes(q)
   );
 }
 
-export default function TransactionsTable({ transactions, onTransactionsChange }) {
+export default function TransactionsTable({ transactions, search = '', onTransactionsChange }) {
   const [sortKey, setSortKey] = useState('date');
   const [sortAsc, setSortAsc] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -64,7 +65,6 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   const [titleEditValue, setTitleEditValue] = useState('');
   const [titleEditScope, setTitleEditScope] = useState('always');
   const [catalogCategories, setCatalogCategories] = useState([]);
-  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchCategories().then((cats) => setCatalogCategories(cats.map((c) => c.name)));
@@ -113,15 +113,11 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
     setTitleEditScope('always');
   }
 
-  // Scope is passed explicitly rather than read from titleEditScope state —
-  // this fires directly from the toggle's onClick, so it must use the scope
-  // being clicked right now, not whatever state happens to have committed by
-  // the time this runs (that race is what caused stale/duplicate rules).
-  async function saveTitleEdit(t, scope) {
+  async function saveTitleEdit(t) {
     const trimmed = titleEditValue.trim();
     setEditingTitleRow(null);
     if (!trimmed || trimmed === t.title) return;
-    await createRule(ruleForEdit('title', scope, t, trimmed));
+    await createRule(ruleForEdit('title', titleEditScope, t, trimmed));
     onTransactionsChange?.(await applyCategoryRules(transactions));
   }
 
@@ -149,19 +145,13 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
               onChange={(e) => setTitleEditValue(e.target.value)}
               onBlur={(e) => {
                 if (e.relatedTarget?.closest('.scope-toggle')) return;
-                saveTitleEdit(t, titleEditScope);
+                saveTitleEdit(t);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') e.target.blur();
               }}
             />
-            <ScopeToggle
-              scope={titleEditScope}
-              onChange={(scope) => {
-                setTitleEditScope(scope);
-                saveTitleEdit(t, scope);
-              }}
-            />
+            <ScopeToggle scope={titleEditScope} onChange={setTitleEditScope} />
           </span>
         ) : (
           <span onClick={() => startEditTitle(t, i)} title="Click to edit title">
@@ -207,26 +197,14 @@ export default function TransactionsTable({ transactions, onTransactionsChange }
   ];
 
   return (
-    <>
-      <div className="table-toolbar">
-        <input
-          type="text"
-          className="table-search"
-          autoComplete="off"
-          placeholder="Search title, description, or date (e.g. 06.07.2026)…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-      <Table
-        columns={columns}
-        rows={paginated}
-        rowStart={pageStart}
-        sortKey={sortKey}
-        sortAsc={sortAsc}
-        onSort={handleSort}
-        pagination={{ pageSize, onPageSizeChange: setPageSize, page: currentPage, onPageChange: setPage, pageCount }}
-      />
-    </>
+    <Table
+      columns={columns}
+      rows={paginated}
+      rowStart={pageStart}
+      sortKey={sortKey}
+      sortAsc={sortAsc}
+      onSort={handleSort}
+      pagination={{ pageSize, onPageSizeChange: setPageSize, page: currentPage, onPageChange: setPage, pageCount }}
+    />
   );
 }

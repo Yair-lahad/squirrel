@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Input from './ui/Input';
+import Select from './ui/Select';
 
 const NEW_OPTION = '__new__';
 
@@ -21,7 +23,7 @@ export default function CategorySelect({ id, value, categories, onChange, onComm
   if (creating) {
     return (
       <span className="category-select-creating">
-        <input
+        <Input
           id={id}
           autoFocus
           autoComplete="off"
@@ -59,7 +61,7 @@ export default function CategorySelect({ id, value, categories, onChange, onComm
   }
 
   return (
-    <select
+    <Select
       id={id}
       value={value}
       onChange={(e) => {
@@ -78,6 +80,6 @@ export default function CategorySelect({ id, value, categories, onChange, onComm
       {categories.map((c) => (
         <option key={c} value={c}>{c}</option>
       ))}
-    </select>
+    </Select>
   );
 }

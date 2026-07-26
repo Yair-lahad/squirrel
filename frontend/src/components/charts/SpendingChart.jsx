@@ -10,9 +10,10 @@ import { barOptions, pieOptions } from './spendingChartOptions';
 import ViewToggle from './ViewToggle';
 import MetricToggle from './MetricToggle';
 import OthersThresholdChip from './OthersThresholdChip';
+import BubbleChart from './BubbleChart';
 
 export default function SpendingChart({ transactions, metric, onMetricChange, onSelectCategories }) {
-  const [view, setView] = useState('bar');
+  const [view, setView] = useState('bubbles');
 
   const sortedRows = useCategoryRows(transactions, metric);
   const grouping = useOthersGrouping(sortedRows ?? [], metric);
@@ -36,11 +37,13 @@ export default function SpendingChart({ transactions, metric, onMetricChange, on
         data={{ labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 4 }] }}
         options={barOptions({ rows, metric, onClick: handleClick })}
       />
-    ) : (
+    ) : view === 'pie' ? (
       <Pie
         data={{ labels, datasets: [{ data: values, backgroundColor: colors, borderColor: PALETTE.surface, borderWidth: 2 }] }}
         options={pieOptions({ rows, metric, onClick: handleClick })}
       />
+    ) : (
+      <BubbleChart rows={rows} metric={metric} colors={colors} onSelectCategories={onSelectCategories} />
     );
 
   return (

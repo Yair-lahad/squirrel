@@ -168,6 +168,11 @@ h1 {
   padding: 0.4rem 0.5rem;
 }
 
+.form-row .input,
+.form-row .select {
+  flex: 1;
+}
+
 .form-actions {
   display: flex;
   gap: 0.75rem;
@@ -177,6 +182,84 @@ h1 {
 button {
   padding: 0.5rem 1rem;
   cursor: pointer;
+}
+
+/* Shared UI components (components/ui/*) — Button, Input, Select */
+
+.btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), #1d5ea8);
+  border-color: #1d5ea8;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(42, 120, 214, 0.35);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 5px 14px rgba(42, 120, 214, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e8544f, #c22f2f);
+  border-color: #c22f2f;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(211, 51, 51, 0.3);
+}
+
+.btn-danger:hover {
+  box-shadow: 0 5px 14px rgba(211, 51, 51, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  box-shadow: none;
+}
+
+.btn-ghost:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  line-height: 0;
+}
+
+.input,
+.select {
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(42, 120, 214, 0.18);
 }
 
 .status {
@@ -500,14 +583,108 @@ button {
   flex-wrap: wrap;
 }
 
-.chart-controls .toggle-group + .toggle-group {
+.chart-controls .toggle-group + .toggle-group,
+.chart-controls .view-toggle + .toggle-group {
   padding-left: 1rem;
   border-left: 1px solid var(--color-border);
+}
+
+.view-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.view-toggle {
+  width: auto;
 }
 
 .chart-canvas {
   position: relative;
   height: 560px;
+}
+
+.bubble-chart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  align-content: center;
+  gap: 1.5rem 2rem;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.bubble-circle {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  color: #fff;
+  background: var(--bubble-color);
+  overflow: hidden;
+  box-shadow:
+    inset 0 3px 5px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.3),
+    0 6px 14px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bubble-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 55%);
+}
+
+.bubble:hover .bubble-circle {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow:
+    inset 0 3px 5px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.32),
+    0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.bubble-icon {
+  position: relative;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+.bubble-value {
+  position: relative;
+  font-weight: 700;
+  font-size: 0.85em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.bubble-label {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .toggle-group {
@@ -589,6 +766,11 @@ button {
   justify-content: center;
   margin-top: 0.75rem;
   margin-bottom: 0;
+}
+
+.rule-search-toolbar {
+  margin-top: 1.75rem;
+  margin-bottom: 0.3rem;
 }
 
 .table-search {
@@ -708,6 +890,36 @@ tbody tr:last-child td {
   color: #fff;
 }
 
+.rule-form-panel {
+  position: relative;
+  margin-top: 1.5rem;
+  padding: 1.5rem 1.75rem 1.5rem 2rem;
+  border-radius: 14px;
+  background: linear-gradient(155deg, rgba(42, 120, 214, 0.07), var(--color-surface) 65%);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.rule-form-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--color-primary), var(--chart-5));
+}
+
+.section-heading {
+  margin: 0 0 1.1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.rule-list-heading {
+  margin: 0;
+}
+
 .rule-match-kind {
   opacity: 0.75;
   font-size: 0.9em;
@@ -722,12 +934,6 @@ tbody tr:last-child td {
 .category-select-back {
   padding: 0.2rem 0.4rem;
   line-height: 1;
-}
-
-.category-add {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
 }
 
 .category-add-button {
@@ -775,9 +981,15 @@ tbody tr:last-child td {
   margin-top: 1rem;
 }
 
-.category-grid-section h2 {
-  font-size: 1.1rem;
+.category-grid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 0.75rem;
+}
+
+.category-grid-header .section-heading {
+  margin: 0;
 }
 
 .category-grid {
@@ -787,53 +999,97 @@ tbody tr:last-child td {
 }
 
 .category-chip {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
+  width: fit-content;
+  justify-self: center;
+  padding: 0.75rem 0.5rem 0.5rem;
   text-align: center;
 }
 
+.category-chip:hover {
+  z-index: 1;
+}
+
+.category-chip-icon-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
 .category-chip-icon {
-  width: 44px;
-  height: 44px;
+  position: relative;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.7rem;
   color: #fff;
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.45),
+    inset 0 -4px 6px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.category-chip-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 55%);
 }
 
 .category-chip-label {
+  margin-top: 2px;
+  padding: 1px 12px 3px;
+  border-radius: 32px 32px 6px 6px;
   font-size: 0.85rem;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
-.category-chip-actions {
+.category-chip-edit,
+.category-chip-delete {
+  position: absolute;
+  top: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   display: flex;
-  gap: 0.35rem;
-}
-
-.category-chip-actions button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.1rem 0.3rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0.7rem;
   line-height: 1;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(2px);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
   color: var(--color-text-muted);
+  transition: transform 0.15s ease, background 0.15s ease;
 }
 
-.category-chip-actions button:hover {
-  color: var(--color-text-primary);
+.category-chip-edit {
+  left: -4px;
 }
 
-.category-chip-actions button.category-chip-delete {
+.category-chip-delete {
+  right: -4px;
   color: var(--color-error);
+}
+
+.category-chip-edit:hover,
+.category-chip-delete:hover {
+  transform: scale(1.3);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.category-chip-edit:hover {
+  color: var(--color-text-primary);
 }
 
 .category-chip-actions button.category-chip-delete:hover {
