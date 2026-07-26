@@ -2,14 +2,16 @@
 // via sqrt) - a more visceral "this one's big" read than a bar's length.
 import { formatCurrency } from '../../core/format';
 import { categoryVisual } from '../../core/categoryVisuals';
-import CashStackIcon from '../icons/CashStackIcon';
-import CoinsIcon from '../icons/CoinsIcon';
 
 const MIN_DIAMETER = 64;
 const MAX_DIAMETER = 200;
 
-// Below this, a fanned stack of bills reads as an exaggeration - coins fit better.
-const CASH_STACK_THRESHOLD = 100;
+// Same simple-emoji-on-a-colored-circle language as the count metric's
+// per-category icon, rather than a detailed fixed-palette illustration.
+// Below this, a banknote reads as an exaggeration - a coin fits better.
+const CASH_THRESHOLD = 100;
+const CASH_ICON = '\u{1F4B5}';
+const COIN_ICON = '\u{1FA99}';
 
 function diameterFor(value, maxValue) {
   const ratio = maxValue > 0 ? Math.sqrt(value / maxValue) : 0;
@@ -41,15 +43,9 @@ export default function BubbleChart({ rows, metric, colors, onSelectCategories }
                 fontSize: Math.max(11, diameter * 0.14),
               }}
             >
-              {metric === 'amount' ? (
-                row.amount >= CASH_STACK_THRESHOLD ? (
-                  <CashStackIcon className="bubble-icon" size="1em" />
-                ) : (
-                  <CoinsIcon className="bubble-icon" size="1em" />
-                )
-              ) : (
-                <span className="bubble-icon">{icon || initial}</span>
-              )}
+              <span className="bubble-icon">
+                {metric === 'amount' ? (row.amount >= CASH_THRESHOLD ? CASH_ICON : COIN_ICON) : icon || initial}
+              </span>
               <span className="bubble-value">{valueText}</span>
             </span>
             <span className="bubble-label">{row.category}</span>

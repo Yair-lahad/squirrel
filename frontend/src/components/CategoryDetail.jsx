@@ -37,13 +37,13 @@ export default function CategoryDetail({ categories, transactions, metric, onBac
       </div>
       {isGroup && <p className="category-detail-subtitle">{categories.join(', ')}</p>}
       <div className="category-detail-layout">
-        <CategoryScatterChart transactions={items} />
         <MiniCategoryPicker
           transactions={transactions}
           metric={metric}
           activeCategories={categories}
           onSelectCategories={onSelectCategories}
         />
+        <CategoryScatterChart transactions={items} />
         <Advisor categories={categories} transactions={transactions} />
       </div>
     </div>

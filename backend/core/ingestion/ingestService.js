@@ -57,7 +57,11 @@ async function ingestUploadDoc(file) {
   const text = await docxText.extractText(file.buffer);
   const dbCategories = (await ruleService.listCategories()).map((c) => c.name);
   const existingCategories = [...new Set([...fileSource.CANONICAL_CATEGORIES, ...dbCategories])];
-  const transactions = await statementExtractor.extractTransactions(text, existingCategories);
+  const extracted = await statementExtractor.extractTransactions(text, existingCategories);
+  // Resolve category-merge rules (e.g. "Delicatessen" -> "Dining") against the
+  // LLM's raw guess before storing, so what lands in the DB is already the
+  // resolved category rather than relying on every future read to correct it.
+  const transactions = await ruleService.applyRulesTo(extracted);
   const stored = await transactionService.storeAndGetIds(transactions, 'upload', file.originalname, contentHash);
   return ruleService.applyRulesTo(stored);
 }
