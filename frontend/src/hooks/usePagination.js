@@ -10,9 +10,11 @@ export function usePagination(items, initialPageSize = 100) {
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [page, setPage] = useState(0);
 
+  // Keyed on length, not the array reference - callers rebuild `items` fresh
+  // every render (filter/sort), which would otherwise reset the page on every click.
   useEffect(() => {
     setPage(0);
-  }, [items, pageSize]);
+  }, [items?.length, pageSize]);
 
   const pageCount = items && pageSize !== 'All' ? Math.max(1, Math.ceil(items.length / pageSize)) : 1;
   const currentPage = Math.min(page, pageCount - 1);

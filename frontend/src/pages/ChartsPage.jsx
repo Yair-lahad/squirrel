@@ -6,33 +6,19 @@ import TimelineCompareChart, { TOTAL } from '../components/charts/TimelineCompar
 import CategoryDetail from '../components/CategoryDetail';
 import EmptyState from '../components/layout/EmptyState';
 import TabNav from '../components/layout/TabNav';
-import { fetchTransactions } from '../routes/transactions';
-import { fetchCategoryDetail } from '../routes/analytics';
 
 const TABS = [
   { id: 'category', label: 'By Category' },
   { id: 'timeline', label: 'Timeline Compare' },
 ];
 
-export default function ChartsPage({ transactions, uploads, chartsTab, onChartsTabChange, onLoaded, onChangeUpload }) {
-  // `detail` is only ever set when pre-fetched (see goToFileCategory) -
-  // seeding CategoryDetail with it up front avoids the loading flash.
-  const [drill, setDrill] = useState(null); // { categories, detail }
+export default function ChartsPage({ transactions, allTransactions, uploads, chartsTab, onChartsTabChange, onLoaded, onChangeUpload }) {
+  const [drill, setDrill] = useState(null); // { categories }
   const [metric, setMetric] = useState('amount');
   // Lifted out of TimelineCompareChart so "back" from a drill-in remembers it.
   const [timelineCategory, setTimelineCategory] = useState(TOTAL);
-  // Fetched once and kept for the life of this page - ChartsPage itself
-  // doesn't unmount when toggling into/out of CategoryDetail, so this
-  // survives "back" instead of Timeline Compare re-fetching every time.
-  const [allTransactions, setAllTransactions] = useState(null);
   const detailRef = useRef(null);
   const contentRef = useRef(null);
-
-  useEffect(() => {
-    if (chartsTab === 'timeline' && allTransactions === null) {
-      fetchTransactions({ all: true }).then(setAllTransactions);
-    }
-  }, [chartsTab, allTransactions]);
 
   // Only centers the plain tab view (Timeline <-> By Category / closing a
   // drill) - entering a drill is handled separately by scrollToDetail, once
@@ -69,14 +55,11 @@ export default function ChartsPage({ transactions, uploads, chartsTab, onChartsT
     setDrill(null);
   }
 
-  // Fetches the target upload's transactions and its category detail before
-  // switching views, so CategoryDetail mounts already-loaded instead of
-  // showing a loading placeholder then popping in a moment later.
-  async function goToFileCategory(uploadId, category) {
-    const [fileTransactions] = await Promise.all([fetchTransactions({ uploadId }), onChangeUpload(uploadId)]);
-    const detail = await fetchCategoryDetail(fileTransactions, [category]);
+  // Resolves against data already in memory - no fetch, no load flash.
+  function goToFileCategory(uploadId, category) {
+    onChangeUpload(uploadId);
     onChartsTabChange('category');
-    setDrill({ categories: [category], detail });
+    setDrill({ categories: [category] });
   }
 
   return (
@@ -97,9 +80,8 @@ export default function ChartsPage({ transactions, uploads, chartsTab, onChartsT
               categories={drill.categories}
               transactions={transactions}
               metric={metric}
-              initialDetail={drill.detail}
               onBack={closeDrill}
-              onSelectCategories={(categories) => setDrill({ categories, detail: null })}
+              onSelectCategories={(categories) => setDrill({ categories })}
               onReady={scrollToDetail}
               onTransactionsChange={onLoaded}
             />
@@ -117,7 +99,7 @@ export default function ChartsPage({ transactions, uploads, chartsTab, onChartsT
             transactions={transactions}
             metric={metric}
             onMetricChange={setMetric}
-            onSelectCategories={(categories) => setDrill({ categories, detail: null })}
+            onSelectCategories={(categories) => setDrill({ categories })}
           />
         )}
       </div>

@@ -32,7 +32,7 @@ function currentPage() {
 export default function App() {
   const [page, setPage] = useState(currentPage);
   const [chartsTab, setChartsTab] = useState('category');
-  const { transactions, uploads, selectedUploadId, changeUpload, refresh } = useUploads();
+  const { transactions, allTransactions, uploads, selectedUploadId, changeUpload, refresh } = useUploads();
 
   useEffect(() => {
     const onPopState = () => setPage(currentPage());
@@ -66,6 +66,7 @@ export default function App() {
         <div key={key} style={{ display: page === key ? 'contents' : 'none' }}>
           <PageComponent
             transactions={transactions}
+            allTransactions={allTransactions}
             uploads={uploads}
             chartsTab={chartsTab}
             onChartsTabChange={setChartsTab}

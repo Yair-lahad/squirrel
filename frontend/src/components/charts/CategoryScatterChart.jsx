@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Scatter } from 'react-chartjs-2';
 import { formatCurrency, formatDayMonth } from '../../utils/format';
 import { PALETTE } from '../../utils/palette';
@@ -27,6 +27,20 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
   const [editing, setEditing] = useState(null); // { id, value, x, y }
   const [tooltip, setTooltip] = useState(null); // { x, y, title, amount, date }
   const [axisLeft, setAxisLeft] = useState(0);
+  const chartRef = useRef(null);
+
+  // Drop stale overrides once real data arrives - an override can otherwise outlive its rule.
+  useEffect(() => {
+    setTitleOverrides({});
+  }, [transactions]);
+
+  // Chart.js sometimes measures the flex container before layout settles - force a resize.
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => chartRef.current?.resize());
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const resolved = transactions.map((t) => (titleOverrides[t.id] ? { ...t, title: titleOverrides[t.id] } : t));
 
@@ -75,11 +89,10 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
 
   async function saveEdit() {
     if (!editing) return;
-    const { ids, value } = editing;
+    const { ids, value, originalTitle } = editing;
     const trimmed = value.trim();
-    const original = points.find((p) => p.ids === ids);
     setEditing(null);
-    if (!trimmed || trimmed === original.title) return;
+    if (!trimmed || trimmed === originalTitle) return;
     setTitleOverrides((prev) => {
       const next = { ...prev };
       ids.forEach((id) => (next[id] = trimmed));
@@ -116,7 +129,7 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
       if (!elements.length) return;
       const { index, element } = elements[0];
       const p = points[index];
-      setEditing({ ids: p.ids, value: p.title, x: element.x, y: element.y });
+      setEditing({ ids: p.ids, value: p.title, originalTitle: p.title, x: element.x, y: element.y });
     },
     plugins: {
       legend: { display: false },
@@ -187,7 +200,7 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
         </label>
       </div>
       <div className="chart-canvas">
-        <Scatter data={data} options={options} plugins={[measureAxis]} />
+        <Scatter ref={chartRef} data={data} options={options} plugins={[measureAxis]} />
         {editing && (
           <input
             autoFocus

@@ -11,8 +11,6 @@ import SummaryHeader from '../SummaryHeader';
 export const TOTAL = '__total__';
 
 export default function TimelineCompareChart({ uploads, transactions, onSelectFileCategory, selected, onSelectedChange }) {
-  if (transactions === null) return <div className="chart-loading-placeholder" />;
-
   const spend = transactions.filter((t) => t.amount < 0);
 
   const totalByCategory = new Map();

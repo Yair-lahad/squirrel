@@ -62,7 +62,7 @@ function RuleScopeCell({ rule }) {
   );
 }
 
-export default function CategoriesPage({ transactions, onLoaded }) {
+export default function CategoriesPage({ transactions, allTransactions, onLoaded }) {
   const [rules, setRules] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesReady, setCategoriesReady] = useState(false);
@@ -72,9 +72,13 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   const [formKey, setFormKey] = useState(0);
   const [ruleSearch, setRuleSearch] = useState('');
 
+  // Re-syncs when a rule is created elsewhere (e.g. Transactions inline edit).
+  useEffect(() => {
+    fetchRules().then(setRules);
+  }, [allTransactions]);
+
   useEffect(() => {
     (async () => {
-      const rulesPromise = fetchRules();
       // Rules may have been created in a previous visit/session, after the
       // currently cached transactions were fetched - resync on every visit,
       // not just right after creating a rule, so stale categories don't linger.
@@ -85,9 +89,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
           return cats;
         });
       }
-      const [latestRules, latestCategories] = await Promise.all([rulesPromise, categoriesPromise]);
-      setRules(latestRules);
-      setCategories(latestCategories);
+      setCategories(await categoriesPromise);
       setCategoriesReady(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,16 +123,13 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
   async function refreshAfterCategoryChange() {
     const rulesPromise = fetchRules();
-    let categoriesPromise = fetchCategories();
-    if (transactions.length) {
-      categoriesPromise = applyCategoryRulesAndCategories(transactions).then(({ transactions: applied, categories: cats }) => {
-        onLoaded?.(applied);
-        return cats;
-      });
-    }
+    const categoriesPromise = transactions.length
+      ? applyCategoryRulesAndCategories(transactions).then(({ categories: cats }) => cats)
+      : fetchCategories();
     const [latestRules, latestCategories] = await Promise.all([rulesPromise, categoriesPromise]);
     setRules(latestRules);
     setCategories(latestCategories);
+    onLoaded?.();
   }
 
   async function handleRenameCategory(id, name) {
@@ -212,7 +211,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
   async function handleDelete(id) {
     await deleteRule(id);
-    setRules(await fetchRules());
+    await refreshAfterCategoryChange();
   }
 
   return (

@@ -3,8 +3,7 @@
  * several when an "Others" group (see othersThreshold.js) was clicked.
  */
 import { useEffect, useRef } from 'react';
-import { fetchCategoryDetail } from '../routes/analytics';
-import { useAnalytics } from '../hooks/useAnalytics';
+import { categoryDetail } from '../utils/analytics';
 import { formatPeriod } from '../utils/format';
 import SummaryHeader from './SummaryHeader';
 import CategoryScatterChart from './charts/CategoryScatterChart';
@@ -13,23 +12,19 @@ import { OTHERS_LABEL } from './charts/othersThreshold';
 import Advisor from '../agents/advisor/Advisor';
 import Button from './ui/Button';
 
-export default function CategoryDetail({ categories, transactions, metric, onBack, onSelectCategories, onReady, onTransactionsChange, initialDetail }) {
-  const detail = useAnalytics(() => fetchCategoryDetail(transactions, categories), [transactions, categories], initialDetail);
+export default function CategoryDetail({ categories, transactions, metric, onBack, onSelectCategories, onReady, onTransactionsChange }) {
+  const detail = categoryDetail(transactions, categories);
 
   // Only scroll on the initial open, not on every category switch within an
-  // already-open detail view (which re-fetches `detail` too).
+  // already-open detail view.
   const hasScrolledRef = useRef(false);
   useEffect(() => {
-    if (detail && !hasScrolledRef.current) {
+    if (!hasScrolledRef.current) {
       hasScrolledRef.current = true;
       onReady?.();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail]);
-
-  // Reserves space while loading instead of collapsing to nothing, which
-  // made navigating here feel like a jarring shift.
-  if (!detail) return <div className="chart-loading-placeholder" />;
+  }, []);
 
   const { items } = detail;
   const isGroup = categories.length > 1;

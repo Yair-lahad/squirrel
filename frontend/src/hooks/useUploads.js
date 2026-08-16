@@ -2,38 +2,37 @@ import { useEffect, useState } from 'react';
 import { useTransactions } from './useTransactions';
 import { fetchTransactions, fetchUploads } from '../routes/transactions';
 
-// Owns which "upload" (file/mock/vendor fetch) is currently selected and
-// keeps the shared transactions list (sessionStorage-backed, via
-// useTransactions) in sync with that selection.
-export function useUploads() {
-  const [transactions, setTransactions] = useTransactions();
-  const [uploads, setUploads] = useState([]);
-  const [selectedUploadId, setSelectedUploadId] = useState(null);
+const SELECTED_KEY = 'squirrel:selectedUploadId';
 
-  async function loadForUpload(uploadId) {
-    setTransactions(await fetchTransactions(uploadId ? { uploadId } : { all: true }));
+// "Selected upload" just filters the one fetched set - switching never re-fetches.
+export function useUploads() {
+  const [allTransactions, setAllTransactions] = useTransactions();
+  const [uploads, setUploads] = useState([]);
+  const [selectedUploadId, setSelectedUploadId] = useState(() => {
+    const cached = sessionStorage.getItem(SELECTED_KEY);
+    return cached ? JSON.parse(cached) : null;
+  });
+
+  // null selectedUploadId means "All uploads" (see UploadSelector).
+  const transactions = selectedUploadId === null ? allTransactions : allTransactions.filter((t) => t.upload_id === selectedUploadId);
+
+  function changeUpload(uploadId) {
+    sessionStorage.setItem(SELECTED_KEY, JSON.stringify(uploadId));
+    setSelectedUploadId(uploadId);
   }
 
-  // Refreshes the upload list (e.g. after a new load) and keeps the current
-  // selection if it still exists, otherwise falls back to the latest upload.
+  // Keeps the current selection if it still exists, else falls back to the latest upload.
   async function refresh(preferredUploadId = selectedUploadId) {
-    const list = await fetchUploads();
+    const [list, all] = await Promise.all([fetchUploads(), fetchTransactions({ all: true })]);
     setUploads(list);
-    const uploadId = list.some((u) => u.id === preferredUploadId) ? preferredUploadId : (list[0]?.id ?? null);
-    setSelectedUploadId(uploadId);
-    await loadForUpload(uploadId);
+    setAllTransactions(all);
+    changeUpload(list.some((u) => u.id === preferredUploadId) ? preferredUploadId : (list[0]?.id ?? null));
   }
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Returns the load promise so callers can wait for the switch to finish
-  // (e.g. before showing a view that depends on the new upload's data).
-  function changeUpload(uploadId) {
-    setSelectedUploadId(uploadId);
-    return loadForUpload(uploadId);
-  }
-
-  return { transactions, uploads, selectedUploadId, changeUpload, refresh };
+  return { transactions, allTransactions, uploads, selectedUploadId, changeUpload, refresh };
 }
