@@ -31,6 +31,7 @@ function currentPage() {
 
 export default function App() {
   const [page, setPage] = useState(currentPage);
+  const [chartsTab, setChartsTab] = useState('category');
   const { transactions, uploads, selectedUploadId, changeUpload, refresh } = useUploads();
 
   useEffect(() => {
@@ -45,17 +46,30 @@ export default function App() {
   }
 
   const Page = PAGES[page];
+  // The timeline tab compares across every upload on its own, so the
+  // month/upload selector has nothing to do there - hide it rather than
+  // leave a control that looks live but is quietly ignored.
+  const showUploadSelector = Page.showUploadSelector && !(page === 'charts' && chartsTab === 'timeline');
 
   return (
     <>
       <header className="site-header">
-        <Nav page={page} onChange={changePage} />
-        {Page.showUploadSelector && (
-          <UploadSelector uploads={uploads} value={selectedUploadId} onChange={changeUpload} />
-        )}
         <Header />
+        <Nav page={page} onChange={changePage} />
+        <div className="site-header-right">
+          {showUploadSelector && (
+            <UploadSelector uploads={uploads} value={selectedUploadId} onChange={changeUpload} />
+          )}
+        </div>
       </header>
-      <Page transactions={transactions} onLoaded={() => refresh()} />
+      <Page
+        transactions={transactions}
+        uploads={uploads}
+        chartsTab={chartsTab}
+        onChartsTabChange={setChartsTab}
+        onLoaded={() => refresh()}
+        onChangeUpload={changeUpload}
+      />
     </>
   );
 }

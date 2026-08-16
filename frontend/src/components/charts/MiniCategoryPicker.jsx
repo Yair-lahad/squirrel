@@ -14,7 +14,7 @@ function swatchFor(value, maxValue) {
   return MIN_SWATCH + (MAX_SWATCH - MIN_SWATCH) * ratio;
 }
 
-export default function MiniCategoryPicker({ transactions, metric, activeCategories, onSelectCategories }) {
+export default function MiniCategoryPicker({ transactions, metric, activeCategories, onSelectCategories, allLabel, onSelectAll }) {
   const rows = useCategoryRows(transactions, metric);
 
   if (!rows) return null;
@@ -25,6 +25,18 @@ export default function MiniCategoryPicker({ transactions, metric, activeCategor
     <div className="mini-legend-panel">
       <h4 className="mini-legend-title">Categories</h4>
       <ul className="mini-legend">
+        {onSelectAll && (
+          <li>
+            <button
+              type="button"
+              className={`mini-legend-item${activeCategories.length === 0 ? ' active' : ''}`}
+              onClick={onSelectAll}
+            >
+              <span className="mini-legend-swatch" style={{ width: MIN_SWATCH, height: MIN_SWATCH, background: PALETTE.textPrimary }} />
+              <span className="mini-legend-label">{allLabel}</span>
+            </button>
+          </li>
+        )}
         {rows.map((row, i) => {
           const size = swatchFor(row[metric], maxValue);
           const color = row.category === OTHERS_LABEL ? PALETTE.muted : PALETTE.categorical[i % PALETTE.categorical.length];

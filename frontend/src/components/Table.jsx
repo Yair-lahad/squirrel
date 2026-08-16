@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Pagination from './Pagination';
 
 // Shared table shell for the transactions list and the rules list - both are
@@ -31,8 +31,10 @@ export default function Table({
   // of staying locked - it's a deliberate resize, not a filter - so the lock
   // resets whenever pageSize changes.
   const contentRef = useRef(null);
+  const cardRef = useRef(null);
   const [minHeight, setMinHeight] = useState(0);
   const prevPageSizeRef = useRef(pagination?.pageSize);
+  const prevPageRef = useRef(pagination?.page);
 
   useLayoutEffect(() => {
     if (!contentRef.current) return;
@@ -42,8 +44,27 @@ export default function Table({
     setMinHeight((prev) => (pageSizeChanged ? height : Math.max(prev, height)));
   }, [rows, pagination?.pageSize]);
 
+  // Scroll the new page into view - otherwise it stays wherever the old
+  // page's Prev/Next button was, off the top of the new rows.
+  useEffect(() => {
+    if (pagination && pagination.page !== prevPageRef.current) {
+      prevPageRef.current = pagination.page;
+      // Double-rAF waits for layout to settle; blur avoids the browser
+      // pulling focus (and the scroll) back to the now off-screen button.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const el = cardRef.current;
+          if (!el) return;
+          document.activeElement?.blur();
+          const top = el.getBoundingClientRect().top + window.scrollY - 16;
+          window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+        });
+      });
+    }
+  }, [pagination?.page]);
+
   return (
-    <div className="table-card" style={{ minHeight: minHeight || undefined }}>
+    <div className="table-card" style={{ minHeight: minHeight || undefined }} ref={cardRef}>
       <div ref={contentRef}>
         <table>
           <thead>

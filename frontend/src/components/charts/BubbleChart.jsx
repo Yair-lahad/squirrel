@@ -8,10 +8,13 @@ const MAX_DIAMETER = 200;
 
 // Same simple-emoji-on-a-colored-circle language as the count metric's
 // per-category icon, rather than a detailed fixed-palette illustration.
-// Below this, a banknote reads as an exaggeration - a coin fits better.
+// Below this, a money bag reads as an exaggeration - a plain dollar sign
+// fits better. Both are old (Unicode 6.0) emoji with solid cross-platform
+// font support - the coin emoji (U+1FA99) is much newer and renders as a
+// broken/missing glyph on older emoji fonts, including stock Windows 10.
 const CASH_THRESHOLD = 100;
-const CASH_ICON = '\u{1F4B5}';
-const COIN_ICON = '\u{1FA99}';
+const CASH_ICON = '\u{1F4B0}';
+const COIN_ICON = '\u{1F4B2}';
 
 function diameterFor(value, maxValue) {
   const ratio = maxValue > 0 ? Math.sqrt(value / maxValue) : 0;

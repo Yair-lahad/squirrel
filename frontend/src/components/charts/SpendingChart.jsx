@@ -18,7 +18,7 @@ export default function SpendingChart({ transactions, metric, onMetricChange, on
   const sortedRows = useCategoryRows(transactions, metric);
   const grouping = useOthersGrouping(sortedRows ?? [], metric);
 
-  if (!sortedRows) return null;
+  if (!sortedRows) return <div className="chart-loading-placeholder" />;
 
   const { rows, groupSmall, toggleGroupSmall, threshold, setThreshold } = grouping;
   const colors = rows.map((r, i) => (r.category === OTHERS_LABEL ? PALETTE.muted : PALETTE.categorical[i % PALETTE.categorical.length]));
@@ -63,7 +63,7 @@ export default function SpendingChart({ transactions, metric, onMetricChange, on
         </div>
       </div>
       <p className="chart-hint">Click a category to see its transactions.</p>
-      <div className="chart-canvas">{chart}</div>
+      <div className={view === 'bubble' ? 'chart-canvas chart-canvas-fluid' : 'chart-canvas'}>{chart}</div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   fetchRules,
   createRule,
@@ -92,22 +92,17 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   // once it's been used in a rule - transaction-only or rule-only names still
   // need to show up so they stay pickable in CategorySelect. Only category
   // rules contribute here - a title rule's value is a title, not a category.
-  const categoryEntries = useMemo(() => {
-    const byName = new Map();
-    transactions.forEach((t) => t.category && byName.set(t.category, { name: t.category, id: null }));
-    rules
-      .filter((r) => r.attribute === 'category')
-      .forEach((r) => !byName.has(r.value) && byName.set(r.value, { name: r.value, id: null }));
-    categories.forEach((c) => byName.set(c.name, { name: c.name, id: c.id }));
-    return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [transactions, rules, categories]);
+  const categoryEntriesByName = new Map();
+  transactions.forEach((t) => t.category && categoryEntriesByName.set(t.category, { name: t.category, id: null }));
+  rules
+    .filter((r) => r.attribute === 'category')
+    .forEach((r) => !categoryEntriesByName.has(r.value) && categoryEntriesByName.set(r.value, { name: r.value, id: null }));
+  categories.forEach((c) => categoryEntriesByName.set(c.name, { name: c.name, id: c.id }));
+  const categoryEntries = [...categoryEntriesByName.values()].sort((a, b) => a.name.localeCompare(b.name));
 
-  const existingCategories = useMemo(() => categoryEntries.map((c) => c.name), [categoryEntries]);
+  const existingCategories = categoryEntries.map((c) => c.name);
 
-  const filteredRules = useMemo(
-    () => rules.filter((r) => matchesRuleSearch(r, ruleSearch)),
-    [rules, ruleSearch]
-  );
+  const filteredRules = rules.filter((r) => matchesRuleSearch(r, ruleSearch)).sort((a, b) => b.id - a.id);
 
   const {
     pageSize: rulesPageSize,

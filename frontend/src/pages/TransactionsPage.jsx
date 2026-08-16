@@ -19,7 +19,7 @@ export default function TransactionsPage({ transactions, onLoaded }) {
             type="text"
             className="table-search"
             autoComplete="off"
-            placeholder="Search title, description, category, or date (e.g. 06.07.2026)…"
+            placeholder="Search title, description, category or date (e.g. 06.07.2026)…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

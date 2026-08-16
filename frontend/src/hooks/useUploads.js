@@ -28,9 +28,11 @@ export function useUploads() {
     refresh();
   }, []);
 
+  // Returns the load promise so callers can wait for the switch to finish
+  // (e.g. before showing a view that depends on the new upload's data).
   function changeUpload(uploadId) {
     setSelectedUploadId(uploadId);
-    loadForUpload(uploadId);
+    return loadForUpload(uploadId);
   }
 
   return { transactions, uploads, selectedUploadId, changeUpload, refresh };

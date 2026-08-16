@@ -1,3 +1,5 @@
+import TabNav from './TabNav';
+
 const PAGES = [
   { id: 'home', label: 'Home' },
   { id: 'charts', label: 'Charts' },
@@ -7,21 +9,6 @@ const PAGES = [
 ];
 
 export default function Nav({ page, onChange }) {
-  return (
-    <nav className="top-nav">
-      {PAGES.map((p) => (
-        <a
-          key={p.id}
-          href={`/${p.id}`}
-          className={p.id === page ? 'active' : ''}
-          onClick={(e) => {
-            e.preventDefault();
-            onChange(p.id);
-          }}
-        >
-          {p.label}
-        </a>
-      ))}
-    </nav>
-  );
+  const items = PAGES.map((p) => ({ id: p.id, label: p.label, href: `/${p.id}` }));
+  return <TabNav items={items} value={page} onChange={onChange} />;
 }

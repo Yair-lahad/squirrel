@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchSortedTransactions } from '../routes/analytics';
 import { createRule, applyCategoryRules, fetchCategories } from '../routes/categories';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -83,15 +83,13 @@ export default function TransactionsTable({ transactions, search = '', onTransac
     [transactions, sortKey, sortAsc]
   );
 
-  const filtered = useMemo(() => sorted?.filter((t) => matchesSearch(t, search)) ?? null, [sorted, search]);
+  const filtered = sorted?.filter((t) => matchesSearch(t, search)) ?? null;
 
   const { pageSize, setPageSize, page: currentPage, setPage, pageCount, pageStart, paginated } = usePagination(filtered);
 
-  const existingCategories = useMemo(() => {
-    const set = new Set(transactions.map((t) => t.category));
-    catalogCategories.forEach((name) => set.add(name));
-    return [...set].sort();
-  }, [transactions, catalogCategories]);
+  const existingCategorySet = new Set(transactions.map((t) => t.category));
+  catalogCategories.forEach((name) => existingCategorySet.add(name));
+  const existingCategories = [...existingCategorySet].sort();
 
   function startEdit(t, i) {
     setEditingRow(i);
@@ -159,7 +157,6 @@ export default function TransactionsTable({ transactions, search = '', onTransac
           </span>
         ),
     },
-    { key: 'description', label: 'Description', sortable: true, render: (t) => t.description },
     {
       key: 'category',
       label: 'Category',
@@ -194,6 +191,7 @@ export default function TransactionsTable({ transactions, search = '', onTransac
       cellClassName: (t) => (t.amount > 0 ? 'amount-income' : 'amount-expense'),
       render: (t) => `${t.amount > 0 ? '+' : ''}${formatCurrency(Math.abs(t.amount))}`,
     },
+    { key: 'description', label: 'Description', sortable: true, render: (t) => t.description },
   ];
 
   return (

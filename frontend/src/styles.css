@@ -89,6 +89,10 @@ nav.top-nav a.active {
   border-bottom: 2px solid var(--color-primary);
 }
 
+.sub-nav {
+  justify-content: center;
+}
+
 .upload-selector-label {
   display: flex;
   align-items: center;
@@ -96,6 +100,15 @@ nav.top-nav a.active {
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+.entity-select-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .upload-selector {
@@ -111,10 +124,21 @@ nav.top-nav a.active {
 .site-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
   padding: 1.5rem 0 0.5rem;
+}
+
+.site-header > .brand {
+  flex: 1;
+}
+
+.site-header > .top-nav {
+  flex: 0 0 auto;
+}
+
+.site-header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .brand {
@@ -364,9 +388,9 @@ button {
 
 .charts {
   display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  margin-top: 1.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .chart-card {
@@ -374,7 +398,7 @@ button {
   min-width: 420px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .chart-card h3 {
@@ -391,14 +415,16 @@ button {
   margin-bottom: 1rem;
 }
 
+.chart-total-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
 .chart-hint {
   margin: -0.5rem 0 0.75rem;
   font-size: 0.8rem;
   color: var(--color-text-muted);
-}
-
-.category-detail {
-  margin-top: 1.5rem;
 }
 
 .category-detail-header {
@@ -462,7 +488,8 @@ button {
   align-items: stretch;
 }
 
-.category-detail-layout .chart-card {
+.category-detail-layout .chart-card,
+.category-detail-layout > .chart-canvas {
   flex: 2;
   min-width: 0;
 }
@@ -470,6 +497,7 @@ button {
 .category-detail-layout .advisor-panel {
   flex: 1;
   min-width: 300px;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -623,6 +651,27 @@ button {
   height: 560px;
 }
 
+/* Bubble view isn't a Chart.js canvas, so it doesn't need a fixed-height
+   box - let it grow with its content and scroll the page instead of
+   scrolling inside its own little window. */
+.chart-canvas-fluid {
+  height: auto;
+  min-height: 200px;
+}
+
+.scatter-point-edit {
+  position: absolute;
+  transform: translate(-50%, -140%);
+  z-index: 5;
+  width: 160px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.chart-loading-placeholder {
+  min-height: 600px;
+}
+
 .chart-canvas-empty {
   display: flex;
   align-items: center;
@@ -640,8 +689,6 @@ button {
   justify-content: center;
   align-content: center;
   gap: 1.5rem 2rem;
-  height: 100%;
-  overflow-y: auto;
   padding: 1rem;
 }
 
