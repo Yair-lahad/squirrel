@@ -1,16 +1,10 @@
-import { useAnalytics } from '../hooks/useAnalytics';
-import { fetchTransactions } from '../routes/transactions';
 import OverviewPanel from '../components/OverviewPanel';
 import EmptyState from '../components/layout/EmptyState';
 
 // Home's overview always covers every upload combined, independent of
 // whichever single upload the Charts/Transactions selector currently has
 // picked - it's not scoped to that selection.
-export default function HomePage() {
-  const allTransactions = useAnalytics(() => fetchTransactions({ all: true }), []);
-
-  if (!allTransactions) return null;
-
+export default function HomePage({ allTransactions }) {
   return (
     <div className="home-page">
       <img src="/squirrel.png" alt="Squirrel mascot" className="home-image" />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTransactions } from './useTransactions';
+import { useCachedState } from './useCachedState';
 import { fetchTransactions, fetchUploads } from '../routes/transactions';
 
 const SELECTED_KEY = 'squirrel:selectedUploadId';
@@ -7,7 +8,7 @@ const SELECTED_KEY = 'squirrel:selectedUploadId';
 // "Selected upload" just filters the one fetched set - switching never re-fetches.
 export function useUploads() {
   const [allTransactions, setAllTransactions] = useTransactions();
-  const [uploads, setUploads] = useState([]);
+  const [uploads, setUploads] = useCachedState('squirrel:uploads', []);
   const [selectedUploadId, setSelectedUploadId] = useState(() => {
     const cached = sessionStorage.getItem(SELECTED_KEY);
     return cached ? JSON.parse(cached) : null;
@@ -22,11 +23,16 @@ export function useUploads() {
   }
 
   // Keeps the current selection if it still exists, else falls back to the latest upload.
+  // On failure (e.g. backend unreachable), keeps whatever was already loaded/cached.
   async function refresh(preferredUploadId = selectedUploadId) {
-    const [list, all] = await Promise.all([fetchUploads(), fetchTransactions({ all: true })]);
-    setUploads(list);
-    setAllTransactions(all);
-    changeUpload(list.some((u) => u.id === preferredUploadId) ? preferredUploadId : (list[0]?.id ?? null));
+    try {
+      const [list, all] = await Promise.all([fetchUploads(), fetchTransactions({ all: true })]);
+      setUploads(list);
+      setAllTransactions(all);
+      changeUpload(list.some((u) => u.id === preferredUploadId) ? preferredUploadId : (list[0]?.id ?? null));
+    } catch {
+      // offline - leave cached data in place
+    }
   }
 
   useEffect(() => {

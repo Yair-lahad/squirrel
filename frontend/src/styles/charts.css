@@ -68,6 +68,11 @@
 .chart-canvas {
   position: relative;
   height: 560px;
+  overflow: hidden;
+}
+
+.chart-canvas canvas {
+  max-width: 100%;
 }
 
 /* Bubble view isn't a Chart.js canvas, so it doesn't need a fixed-height

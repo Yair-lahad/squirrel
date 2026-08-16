@@ -18,6 +18,7 @@ import Select from '../components/ui/Select';
 import TrashIcon from '../components/icons/TrashIcon';
 import SectionHeading from '../components/ui/SectionHeading';
 import { usePagination } from '../hooks/usePagination';
+import { useCachedState } from '../hooks/useCachedState';
 
 // These rules are always "Always" scope (they match by description, so they
 // keep applying to future transactions too) - a rule scoped to just one
@@ -63,8 +64,8 @@ function RuleScopeCell({ rule }) {
 }
 
 export default function CategoriesPage({ transactions, allTransactions, onLoaded }) {
-  const [rules, setRules] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [rules, setRules] = useCachedState('squirrel:rules', []);
+  const [categories, setCategories] = useCachedState('squirrel:categories', []);
   const [categoriesReady, setCategoriesReady] = useState(false);
   const [form, setForm] = useState({ attribute: 'title', matchType: 'contains', pattern: '', value: '' });
   const [status, setStatus] = useState({ message: '', error: false });
@@ -73,24 +74,30 @@ export default function CategoriesPage({ transactions, allTransactions, onLoaded
   const [ruleSearch, setRuleSearch] = useState('');
 
   // Re-syncs when a rule is created elsewhere (e.g. Transactions inline edit).
+  // On failure (e.g. backend unreachable), leaves the cached rules in place.
   useEffect(() => {
-    fetchRules().then(setRules);
+    fetchRules().then(setRules).catch(() => {});
   }, [allTransactions]);
 
   useEffect(() => {
     (async () => {
-      // Rules may have been created in a previous visit/session, after the
-      // currently cached transactions were fetched - resync on every visit,
-      // not just right after creating a rule, so stale categories don't linger.
-      let categoriesPromise = fetchCategories();
-      if (transactions.length) {
-        categoriesPromise = applyCategoryRulesAndCategories(transactions).then(({ transactions: applied, categories: cats }) => {
-          onLoaded?.(applied);
-          return cats;
-        });
+      try {
+        // Rules may have been created in a previous visit/session, after the
+        // currently cached transactions were fetched - resync on every visit,
+        // not just right after creating a rule, so stale categories don't linger.
+        let categoriesPromise = fetchCategories();
+        if (transactions.length) {
+          categoriesPromise = applyCategoryRulesAndCategories(transactions).then(({ transactions: applied, categories: cats }) => {
+            onLoaded?.(applied);
+            return cats;
+          });
+        }
+        setCategories(await categoriesPromise);
+      } catch {
+        // offline - keep cached categories, still clear the loading state below
+      } finally {
+        setCategoriesReady(true);
       }
-      setCategories(await categoriesPromise);
-      setCategoriesReady(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
