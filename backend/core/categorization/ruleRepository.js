@@ -119,25 +119,24 @@ async function updateCategoryName(id, newName) {
   }
 }
 
-// Only the "value" side counts as in-use: that's the category actively
-// assigned to transactions going forward. A merge rule's "pattern" side is
-// the category being phased OUT - blocking deletion there would make it
-// impossible to ever clean up a category after merging it away, which
-// defeats the point of the merge.
-async function categoryInUse(name) {
-  const { rows } = await pool.query(
-    `SELECT 1 FROM rules WHERE attribute = 'category' AND value = $1 LIMIT 1`,
-    [name]
-  );
-  return rows.length > 0;
+async function getCategoryById(id) {
+  const { rows } = await pool.query('SELECT id, name FROM categories WHERE id = $1', [id]);
+  return rows[0] || null;
 }
 
-async function deleteCategoryRow(id) {
-  const { rows: cat } = await pool.query('SELECT name FROM categories WHERE id = $1', [id]);
-  if (!cat.length) return { status: 'not_found' };
-  if (await categoryInUse(cat[0].name)) return { status: 'in_use' };
-  await pool.query('DELETE FROM categories WHERE id = $1', [id]);
-  return { status: 'ok' };
+async function deleteCategoryById(id, name) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`DELETE FROM rules WHERE attribute = 'category' AND value = $1`, [name]);
+    await client.query('DELETE FROM categories WHERE id = $1', [id]);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 module.exports = {
@@ -153,5 +152,6 @@ module.exports = {
   listCategories,
   insertCategory,
   updateCategoryName,
-  deleteCategoryRow,
+  getCategoryById,
+  deleteCategoryById,
 };

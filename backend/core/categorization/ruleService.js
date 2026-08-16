@@ -1,4 +1,5 @@
 const repo = require('./ruleRepository');
+const transactionService = require('../transactions/transactionService');
 
 // Only one "Once" rule can ever make sense for a given transaction+attribute
 // - re-editing the same row with "Once" should replace that rule, not stack
@@ -134,8 +135,19 @@ async function renameCategory(id, newName) {
   return repo.updateCategoryName(id, newName);
 }
 
+// "In use" means a real transaction currently resolves to this category once
+// rules are applied - not just "some rule's value happens to be this name",
+// since a rule can be fully shadowed by a newer/merge rule and never actually
+// surface it (see resolveAttribute/findCategoryMerge above).
 async function deleteCategory(id) {
-  return repo.deleteCategoryRow(id);
+  const category = await repo.getCategoryById(id);
+  if (!category) return { status: 'not_found' };
+  const rules = await repo.listRules();
+  const transactions = await transactionService.getAll();
+  const inUse = applyRules(transactions, rules).some((t) => t.category === category.name);
+  if (inUse) return { status: 'in_use' };
+  await repo.deleteCategoryById(id, category.name);
+  return { status: 'ok' };
 }
 
 module.exports = {

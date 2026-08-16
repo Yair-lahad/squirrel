@@ -43,11 +43,7 @@ export default function ChartsPage({ transactions, allTransactions, uploads, cha
 
   if (!transactions.length) return <EmptyState />;
 
-  // Instant, not smooth - this transition already swaps the whole view
-  // (Timeline for a differently-shaped detail page), so animating the
-  // scroll on top of that content swap is what reads as a "bump". A jump
-  // has no motion to perceive.
-  function scrollToDetail() {
+   function scrollToDetail() {
     detailRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
   }
 
