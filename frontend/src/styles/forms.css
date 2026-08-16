@@ -144,6 +144,11 @@ button {
   color: var(--color-text-secondary);
 }
 
+.entity-select-label .select {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+}
+
 .upload-selector {
   padding: 0.55rem 0.8rem;
   border-radius: 6px;

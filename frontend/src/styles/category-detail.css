@@ -12,11 +12,14 @@
 }
 
 .summary-header {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.9rem;
-  margin: 0.75rem 0 1.25rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: 640px 1fr auto;
+  align-items: center;
+  column-gap: 0.9rem;
+  margin: 0.4rem 0 0.5rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .summary-header h2 {
@@ -24,6 +27,7 @@
 }
 
 .summary-header-period {
+  white-space: nowrap;
   font-size: 1rem;
   color: var(--color-text-muted);
 }
@@ -32,6 +36,17 @@
   margin: -1rem 0.5rem 1rem;
   font-size: 0.85rem;
   color: var(--color-text-muted);
+}
+
+.summary-header-stats {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  white-space: nowrap;
 }
 
 .summary-header-amount {
@@ -192,7 +207,7 @@
 }
 
 .category-detail-layout .mini-legend-panel {
-  flex: 0 0 88px;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   padding: 0.4rem;
@@ -245,7 +260,7 @@
 
 .mini-legend-item.active {
   color: var(--color-text-primary);
-  font-weight: 700;
+  background: rgba(42, 120, 214, 0.12);
 }
 
 .mini-legend-swatch {
@@ -254,8 +269,6 @@
 }
 
 .mini-legend-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.72rem;
 }

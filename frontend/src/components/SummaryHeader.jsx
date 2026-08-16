@@ -25,12 +25,14 @@ export default function SummaryHeader({ title, transactions, actions, period }) 
           {period ?? formatPeriod(transactions)}
         </span>
       </h2>
-      <span className={`summary-header-amount ${net >= 0 ? 'income' : ''}`}>
-        {formatCurrency(Math.abs(net))}
-      </span>
-      <span className="summary-header-count">
-        <strong>{count}</strong> transaction{count === 1 ? '' : 's'}
-      </span>
+      <div className="summary-header-stats">
+        <span className={`summary-header-amount ${net >= 0 ? 'income' : ''}`}>
+          {formatCurrency(Math.abs(net))}
+        </span>
+        <span className="summary-header-count">
+          <strong>{count}</strong> transaction{count === 1 ? '' : 's'}
+        </span>
+      </div>
       {actions}
     </div>
   );
