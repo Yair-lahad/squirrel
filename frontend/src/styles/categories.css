@@ -1,0 +1,149 @@
+.category-select-creating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.category-select-back {
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+}
+
+.category-add-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.category-add-form input {
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+
+.category-grid-section {
+  margin-top: 1rem;
+}
+
+.category-grid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.category-grid-header .section-heading {
+  margin: 0;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1rem;
+}
+
+.category-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  justify-self: center;
+  padding: 0.75rem 0.5rem 0.5rem;
+  text-align: center;
+}
+
+.category-chip:hover {
+  z-index: 1;
+}
+
+.category-chip-icon-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.category-chip-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  color: #fff;
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.45),
+    inset 0 -4px 6px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.category-chip-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 55%);
+}
+
+.category-chip-label {
+  margin-top: 2px;
+  padding: 1px 12px 3px;
+  border-radius: 32px 32px 6px 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.category-chip-edit,
+.category-chip-delete {
+  position: absolute;
+  top: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0.7rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(2px);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.category-chip-edit {
+  left: -4px;
+}
+
+.category-chip-delete {
+  right: -4px;
+  color: var(--color-error);
+}
+
+.category-chip-edit:hover,
+.category-chip-delete:hover {
+  transform: scale(1.3);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.category-chip-edit:hover {
+  color: var(--color-text-primary);
+}
+
+.category-chip-actions button.category-chip-delete:hover {
+  color: var(--color-error);
+  opacity: 0.75;
+}
+
+.category-chip-editing input {
+  width: 100%;
+  font-size: 0.85rem;
+  text-align: center;
+}

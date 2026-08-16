@@ -5,7 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { fetchCategoryDetail } from '../routes/analytics';
 import { useAnalytics } from '../hooks/useAnalytics';
-import { formatPeriod } from '../core/format';
+import { formatPeriod } from '../utils/format';
 import SummaryHeader from './SummaryHeader';
 import CategoryScatterChart from './charts/CategoryScatterChart';
 import MiniCategoryPicker from './charts/MiniCategoryPicker';

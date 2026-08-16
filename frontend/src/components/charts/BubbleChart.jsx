@@ -1,7 +1,7 @@
 // Each category as a circle sized by its share of the metric (area-proportional,
 // via sqrt) - a more visceral "this one's big" read than a bar's length.
-import { formatCurrency } from '../../core/format';
-import { categoryVisual } from '../../core/categoryVisuals';
+import { formatCurrency } from '../../utils/format';
+import { categoryVisual } from '../../utils/categoryVisuals';
 
 const MIN_DIAMETER = 64;
 const MAX_DIAMETER = 200;

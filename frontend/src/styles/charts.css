@@ -1,0 +1,270 @@
+.charts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.chart-card {
+  flex: 1;
+  min-width: 420px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.chart-card h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.chart-total-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.chart-hint {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.chart-controls .toggle-group + .toggle-group,
+.chart-controls .view-toggle + .toggle-group {
+  padding-left: 1rem;
+  border-left: 1px solid var(--color-border);
+}
+
+.view-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.view-toggle {
+  width: auto;
+}
+
+.chart-canvas {
+  position: relative;
+  height: 560px;
+}
+
+/* Bubble view isn't a Chart.js canvas, so it doesn't need a fixed-height
+   box - let it grow with its content and scroll the page instead of
+   scrolling inside its own little window. */
+.chart-canvas-fluid {
+  height: auto;
+  min-height: 200px;
+}
+
+.scatter-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  pointer-events: none;
+  z-index: 6;
+  background: rgba(40, 40, 40, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  white-space: nowrap;
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.scatter-tooltip > div {
+  margin-top: 0.15rem;
+}
+
+.scatter-tooltip-amount {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.scatter-tooltip-date {
+  margin-left: 0.4rem;
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.scatter-point-edit {
+  position: absolute;
+  transform: translate(-50%, -140%);
+  z-index: 5;
+  width: 160px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.chart-loading-placeholder {
+  min-height: 600px;
+}
+
+.chart-canvas-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-canvas-empty .empty-state {
+  margin-top: 0;
+}
+
+.bubble-chart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  align-content: center;
+  gap: 1.5rem 2rem;
+  padding: 1rem;
+}
+
+.bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.bubble-circle {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  color: #fff;
+  background: var(--bubble-color);
+  overflow: hidden;
+  box-shadow:
+    inset 0 3px 5px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.3),
+    0 6px 14px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, width 0.25s ease, height 0.25s ease;
+}
+
+.bubble-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 55%);
+}
+
+.bubble:hover .bubble-circle {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow:
+    inset 0 3px 5px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.32),
+    0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.bubble-icon {
+  position: relative;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+.bubble-value {
+  position: relative;
+  font-weight: 700;
+  font-size: 0.85em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.bubble-label {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-group button {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.toggle-group button.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.others-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.others-chip.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.others-chip span {
+  white-space: nowrap;
+}
+
+.others-chip input {
+  width: 2.5rem;
+  padding: 0 0.2rem;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background: rgba(127, 127, 127, 0.15);
+  color: inherit;
+}
+
+.others-chip.active input {
+  background: rgba(255, 255, 255, 0.2);
+}

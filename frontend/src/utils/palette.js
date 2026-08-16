@@ -1,7 +1,7 @@
-// Reads the same custom properties defined in styles.css - one place
-// (:root in styles.css) defines every color; this just makes them available
-// as plain hex for Chart.js, which draws to canvas and can't use CSS
-// variables directly.
+// Reads the same custom properties defined in styles/base.css - one place
+// (:root in styles/base.css) defines every color; this just makes them
+// available as plain hex for Chart.js, which draws to canvas and can't use
+// CSS variables directly.
 function cssVar(name, fallback) {
   if (typeof window === 'undefined') return fallback;
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();

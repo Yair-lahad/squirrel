@@ -1,6 +1,6 @@
 import { fetchTotals } from '../routes/analytics';
 import { useAnalytics } from '../hooks/useAnalytics';
-import { formatCurrency, formatPeriod } from '../core/format';
+import { formatCurrency, formatPeriod } from '../utils/format';
 
 export default function OverviewPanel({ transactions }) {
   const totals = useAnalytics(() => fetchTotals(transactions), [transactions]);

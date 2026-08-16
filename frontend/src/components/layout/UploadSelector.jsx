@@ -1,4 +1,4 @@
-import { formatMonthYear } from '../../core/format';
+import { formatMonthYear } from '../../utils/format';
 
 export default function UploadSelector({ uploads, value, onChange }) {
   if (!uploads.length) return null;

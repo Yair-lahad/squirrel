@@ -1,6 +1,6 @@
 // Builds the Chart.js options for the "Spend by category" bar and pie views.
-import { formatCurrency } from '../../core/format';
-import { PALETTE } from '../../core/palette';
+import { formatCurrency } from '../../utils/format';
+import { PALETTE } from '../../utils/palette';
 
 const NAME_VALUE_GAP = '    ';
 

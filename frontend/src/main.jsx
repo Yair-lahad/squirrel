@@ -13,7 +13,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import App from './App';
-import './styles.css';
+import './styles/index.css';
 
 ChartJS.register(
   CategoryScale,

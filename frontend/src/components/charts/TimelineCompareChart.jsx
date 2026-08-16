@@ -2,8 +2,8 @@
 // (every-upload) transaction set as a prop - the caller owns fetching it, so
 // it's kept across this component unmounting when a click drills into detail.
 import { Line } from 'react-chartjs-2';
-import { formatCurrency, formatMonthYear } from '../../core/format';
-import { PALETTE } from '../../core/palette';
+import { formatCurrency, formatMonthYear } from '../../utils/format';
+import { PALETTE } from '../../utils/palette';
 import MiniCategoryPicker from './MiniCategoryPicker';
 import Advisor from '../../agents/advisor/Advisor';
 import SummaryHeader from '../SummaryHeader';
@@ -64,6 +64,8 @@ export default function TimelineCompareChart({ uploads, transactions, onSelectFi
       legend: { display: false },
       datalabels: { display: false },
       tooltip: {
+        displayColors: false,
+        bodyAlign: 'center',
         callbacks: { label: (ctx) => formatCurrency(ctx.parsed.y) },
       },
     },

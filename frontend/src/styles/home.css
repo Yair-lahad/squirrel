@@ -1,0 +1,75 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 2rem;
+  gap: 1.25rem;
+}
+
+.home-image {
+  width: 260px;
+  height: 260px;
+  object-fit: contain;
+}
+
+.home-description {
+  max-width: 480px;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 2;
+}
+
+.home-overview {
+  margin-top: 1.5rem;
+}
+
+.home-overview-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.overview-panel {
+  margin-top: 0.75rem;
+}
+
+.overview-period {
+  margin: 0 0 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.overview-figures {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+}
+
+.overview-figure {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.overview-figure dt {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+.overview-figure dd {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.overview-figure dd.income {
+  color: var(--color-income);
+}
+
+.overview-figure dd.expense {
+  color: var(--color-expense);
+}

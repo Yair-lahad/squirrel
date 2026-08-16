@@ -3,7 +3,7 @@ import { fetchSortedTransactions } from '../routes/analytics';
 import { createRule, applyCategoryRules, fetchCategories } from '../routes/categories';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { usePagination } from '../hooks/usePagination';
-import { formatCurrency, formatDate } from '../core/format';
+import { formatCurrency, formatDate } from '../utils/format';
 import CategorySelect from './CategorySelect';
 import Table from './Table';
 

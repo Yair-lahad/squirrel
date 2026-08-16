@@ -3,7 +3,7 @@
 // grows taller than the scatter chart beside it - no edit/delete chips, no
 // icons/value text, just enough to jump to a different category.
 import { useCategoryRows } from '../../hooks/useCategoryRows';
-import { PALETTE } from '../../core/palette';
+import { PALETTE } from '../../utils/palette';
 import { OTHERS_LABEL } from './othersThreshold';
 
 const MIN_SWATCH = 9;

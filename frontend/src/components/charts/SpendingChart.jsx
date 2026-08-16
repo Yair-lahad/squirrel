@@ -2,7 +2,7 @@
  "Others" group) opens its detail view via onSelectCategories. */
 import { useState } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
-import { PALETTE } from '../../core/palette';
+import { PALETTE } from '../../utils/palette';
 import { OTHERS_LABEL } from './othersThreshold';
 import { useCategoryRows } from '../../hooks/useCategoryRows';
 import { useOthersGrouping } from '../../hooks/useOthersGrouping';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { categoryVisual } from '../core/categoryVisuals';
+import { categoryVisual } from '../utils/categoryVisuals';
 import TrashIcon from './icons/TrashIcon';
 import SectionHeading from './ui/SectionHeading';
 import Button from './ui/Button';

@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../../core/format';
+import { formatCurrency } from '../../../utils/format';
 
 export default function AvgSpendChip({ amount }) {
   return (

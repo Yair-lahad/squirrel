@@ -1,6 +1,6 @@
 import { fetchTotals } from '../routes/analytics';
 import { useAnalytics } from '../hooks/useAnalytics';
-import { formatCurrency, formatPeriod } from '../core/format';
+import { formatCurrency, formatPeriod } from '../utils/format';
 
 // Shared "N transactions, over <period>, net total" header - the same net
 // figure Overview shows (via the same /api/analytics/totals endpoint), reused

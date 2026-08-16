@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Scatter } from 'react-chartjs-2';
-import { formatCurrency, formatDayMonth } from '../../core/format';
-import { PALETTE } from '../../core/palette';
+import { formatCurrency, formatDayMonth } from '../../utils/format';
+import { PALETTE } from '../../utils/palette';
 import { createRule } from '../../routes/categories';
 import Select from '../ui/Select';
 
@@ -25,6 +25,7 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
   // Optimistic rename overlay, applied locally until the parent refetches.
   const [titleOverrides, setTitleOverrides] = useState({});
   const [editing, setEditing] = useState(null); // { id, value, x, y }
+  const [tooltip, setTooltip] = useState(null); // { x, y, title, amount, date }
 
   const resolved = transactions.map((t) => (titleOverrides[t.id] ? { ...t, title: titleOverrides[t.id] } : t));
 
@@ -115,28 +116,22 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
       legend: { display: false },
       datalabels: { display: false },
       tooltip: {
-        callbacks: {
-          title(items) {
-            const p = items[0].raw;
-            return p.count > 1 ? `${p.title} (×${p.count})` : p.title;
-          },
-          label(ctx) {
-            const p = ctx.raw;
-            return `${formatCurrency(Math.abs(p.amount))} · ${formatDayMonth(p.date)}`;
-          },
+        enabled: false,
+        external: (context) => {
+          const tt = context.tooltip;
+          if (!tt || tt.opacity === 0) {
+            setTooltip(null);
+            return;
+          }
+          const p = tt.dataPoints[0].raw;
+          setTooltip({
+            x: context.chart.canvas.offsetLeft + tt.caretX,
+            y: context.chart.canvas.offsetTop + tt.caretY,
+            title: p.count > 1 ? `${p.title} (×${p.count})` : p.title,
+            amount: formatCurrency(Math.abs(p.amount)),
+            date: formatDayMonth(p.date),
+          });
         },
-        backgroundColor: 'rgba(40, 40, 40, 0.85)',
-        titleColor: '#fff',
-        bodyColor: '#f0f0f0',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        borderWidth: 1,
-        padding: 10,
-        cornerRadius: 6,
-        displayColors: false,
-        titleFont: { weight: '600', size: 13 },
-        bodyFont: { weight: '700', size: 15 },
-        bodySpacing: 3,
-        bodyAlign: 'center',
       },
     },
     scales: {
@@ -205,6 +200,15 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
               if (e.key === 'Escape') setEditing(null);
             }}
           />
+        )}
+        {tooltip && (
+          <div className="scatter-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+            <div>{tooltip.title}</div>
+            <div>
+              <span className="scatter-tooltip-amount">{tooltip.amount}</span>
+              <span className="scatter-tooltip-date">{tooltip.date}</span>
+            </div>
+          </div>
         )}
       </div>
     </div>

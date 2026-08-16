@@ -1,4 +1,4 @@
-import { formatCurrency, formatDayMonth } from '../../../core/format';
+import { formatCurrency, formatDayMonth } from '../../../utils/format';
 
 export default function MaxChip({ amount, title, date }) {
   return (
