@@ -6,6 +6,18 @@ import { createRule } from '../../routes/categories';
 import Select from '../ui/Select';
 
 const ALL = '__all__';
+const TOOLTIP_GAP = 10;
+
+// Mirrors Chart.js's own xAlign/yAlign so the box flips away from whichever edge it's near.
+function tooltipPlacement(xAlign, yAlign) {
+  const tx = xAlign === 'left' ? '0%' : xAlign === 'right' ? '-100%' : '-50%';
+  const ty = yAlign === 'top' ? '0%' : yAlign === 'bottom' ? '-100%' : '-50%';
+  return {
+    transform: `translate(${tx}, ${ty})`,
+    marginLeft: xAlign === 'left' ? TOOLTIP_GAP : xAlign === 'right' ? -TOOLTIP_GAP : 0,
+    marginTop: yAlign === 'top' ? TOOLTIP_GAP : yAlign === 'bottom' ? -TOOLTIP_GAP : 0,
+  };
+}
 
 // Groups transactions by resolved title so one recurring merchant can be
 // picked out and highlighted on its own.
@@ -146,6 +158,8 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
           setTooltip({
             x: context.chart.canvas.offsetLeft + tt.caretX,
             y: context.chart.canvas.offsetTop + tt.caretY,
+            xAlign: tt.xAlign,
+            yAlign: tt.yAlign,
             title: p.count > 1 ? `${p.title} (×${p.count})` : p.title,
             amount: formatCurrency(Math.abs(p.amount)),
             date: formatDayMonth(p.date),
@@ -217,7 +231,10 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
           />
         )}
         {tooltip && (
-          <div className="scatter-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+          <div
+            className="scatter-tooltip"
+            style={{ left: tooltip.x, top: tooltip.y, ...tooltipPlacement(tooltip.xAlign, tooltip.yAlign) }}
+          >
             <div>{tooltip.title}</div>
             <div>
               <span className="scatter-tooltip-amount">{tooltip.amount}</span>

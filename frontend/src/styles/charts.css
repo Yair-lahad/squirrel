@@ -85,8 +85,6 @@
 
 .scatter-tooltip {
   position: absolute;
-  transform: translate(-50%, -100%);
-  margin-top: -10px;
   pointer-events: none;
   z-index: 6;
   background: rgba(40, 40, 40, 0.85);
