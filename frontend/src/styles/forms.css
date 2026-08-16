@@ -103,7 +103,7 @@ button {
 }
 
 .btn-pill {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.4rem 0.9rem;
   font-size: 0.85rem;
 }

@@ -76,7 +76,7 @@ export default function TimelineCompareChart({ uploads, transactions, onSelectFi
   };
 
   return (
-    <div className="chart-card">
+    <div className="category-detail">
       <div className="category-detail-header">
         <SummaryHeader title={selected === TOTAL ? 'Timeline Compare' : selected} transactions={inScope} period="" />
       </div>
@@ -89,8 +89,10 @@ export default function TimelineCompareChart({ uploads, transactions, onSelectFi
           allLabel="Total"
           onSelectAll={() => onSelectedChange(TOTAL)}
         />
-        <div className="chart-canvas">
-          <Line data={data} options={options} />
+        <div className="chart-card">
+          <div className="chart-canvas">
+            <Line data={data} options={options} />
+          </div>
         </div>
         {selected !== TOTAL && <Advisor categories={[selected]} transactions={transactions} />}
       </div>

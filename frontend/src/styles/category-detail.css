@@ -156,7 +156,7 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   padding: 0.3rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   box-sizing: border-box;
 }
 

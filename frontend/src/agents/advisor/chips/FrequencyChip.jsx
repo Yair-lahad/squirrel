@@ -1,10 +1,6 @@
 import { formatGap } from '../../../utils/format';
+import AdvisorChip from './AdvisorChip';
 
 export default function FrequencyChip({ days }) {
-  return (
-    <div className="advisor-chip">
-      <span className="advisor-chip-label">Frequency</span>
-      <span className="advisor-chip-value">every {formatGap(days)}</span>
-    </div>
-  );
+  return <AdvisorChip label="Frequency" value={`every ${formatGap(days)}`} />;
 }

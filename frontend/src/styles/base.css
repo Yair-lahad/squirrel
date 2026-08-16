@@ -18,6 +18,7 @@
   --color-expense: #e34948;
   --color-error: #d33;
   --color-bubble-bg: #eef4fb;
+  --radius-pill: 999px;
 
   /* fixed categorical order - never cycled/reassigned by rank */
   --chart-1: #2a78d6;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { fetchVendor } from '../routes/vendor';
 import { fetchMock } from '../routes/mock';
+import { useAsyncStatus } from '../hooks/useAsyncStatus';
 import Button from '../components/ui/Button';
 
 const FIELDS = [
@@ -12,7 +13,7 @@ const FIELDS = [
 
 export default function FetchForm({ onLoaded }) {
   const [form, setForm] = useState({ id: '', card6Digits: '', password: '', startDate: '' });
-  const [status, setStatus] = useState({ message: '', error: false });
+  const { status, run } = useAsyncStatus();
 
   function update(key) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -20,21 +21,17 @@ export default function FetchForm({ onLoaded }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setStatus({ message: 'Fetching…', error: false });
-    try {
-      const data = await fetchVendor(form);
-      onLoaded(data);
-      setStatus({ message: `Loaded ${data.length} transactions.`, error: false });
-    } catch (err) {
-      setStatus({ message: err.message, error: true });
-    }
+    await run('Fetching…', () => fetchVendor(form), async (data) => {
+      await onLoaded(data);
+      return `Loaded ${data.length} transactions.`;
+    });
   }
 
   async function handleMock() {
-    setStatus({ message: 'Loading mock data…', error: false });
-    const data = await fetchMock();
-    onLoaded(data);
-    setStatus({ message: `Loaded ${data.length} mock transactions.`, error: false });
+    await run('Loading mock data…', fetchMock, async (data) => {
+      await onLoaded(data);
+      return `Loaded ${data.length} mock transactions.`;
+    });
   }
 
   return (

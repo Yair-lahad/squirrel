@@ -1,26 +1,11 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { uploadTransactions, uploadDocFile } from '../routes/upload';
+import { useAsyncStatus } from '../hooks/useAsyncStatus';
 import Button from '../components/ui/Button';
 
 export default function FileUpload({ onLoaded }) {
   const inputRef = useRef(null);
-  const [status, setStatus] = useState({ message: '', error: false });
-
-  async function handleChange(e) {
-    const file = e.target.files[0];
-    e.target.value = '';
-    if (!file) return;
-
-    const isJson = file.name.toLowerCase().endsWith('.json');
-    setStatus({ message: 'Processing file…', error: false });
-    try {
-      const stored = isJson ? await uploadJsonFile(file) : await uploadDocFile(file);
-      await onLoaded();
-      setStatus({ message: `Loaded ${stored.length} transactions from ${file.name}.`, error: false });
-    } catch (err) {
-      setStatus({ message: err.message, error: true });
-    }
-  }
+  const { status, run } = useAsyncStatus();
 
   async function uploadJsonFile(file) {
     const transactions = JSON.parse(await file.text());
@@ -28,6 +13,22 @@ export default function FileUpload({ onLoaded }) {
       throw new Error('File must contain a JSON array of transactions');
     }
     return uploadTransactions(transactions, file.name);
+  }
+
+  async function handleChange(e) {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const isJson = file.name.toLowerCase().endsWith('.json');
+    await run(
+      'Processing file…',
+      () => (isJson ? uploadJsonFile(file) : uploadDocFile(file)),
+      async (stored) => {
+        await onLoaded();
+        return `Loaded ${stored.length} transactions from ${file.name}.`;
+      }
+    );
   }
 
   return (

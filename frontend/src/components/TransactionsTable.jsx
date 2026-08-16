@@ -3,6 +3,7 @@ import { fetchSortedTransactions } from '../routes/analytics';
 import { createRule, applyCategoryRules, fetchCategories } from '../routes/categories';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { usePagination } from '../hooks/usePagination';
+import { useInlineEdit } from '../hooks/useInlineEdit';
 import { formatCurrency, formatDate } from '../utils/format';
 import CategorySelect from './CategorySelect';
 import Table from './Table';
@@ -58,12 +59,8 @@ function matchesSearch(t, query) {
 export default function TransactionsTable({ transactions, search = '', onTransactionsChange }) {
   const [sortKey, setSortKey] = useState('date');
   const [sortAsc, setSortAsc] = useState(false);
-  const [editingRow, setEditingRow] = useState(null);
-  const [editValue, setEditValue] = useState('');
-  const [categoryEditScope, setCategoryEditScope] = useState('always');
-  const [editingTitleRow, setEditingTitleRow] = useState(null);
-  const [titleEditValue, setTitleEditValue] = useState('');
-  const [titleEditScope, setTitleEditScope] = useState('always');
+  const categoryEdit = useInlineEdit();
+  const titleEdit = useInlineEdit();
   const [catalogCategories, setCatalogCategories] = useState([]);
 
   useEffect(() => {
@@ -91,31 +88,19 @@ export default function TransactionsTable({ transactions, search = '', onTransac
   catalogCategories.forEach((name) => existingCategorySet.add(name));
   const existingCategories = [...existingCategorySet].sort();
 
-  function startEdit(t, i) {
-    setEditingRow(i);
-    setEditValue(t.category);
-    setCategoryEditScope('always');
-  }
-
   async function saveEdit(t, category) {
     const trimmed = category.trim();
-    setEditingRow(null);
+    categoryEdit.cancel();
     if (!trimmed || trimmed === t.category) return;
-    await createRule(ruleForEdit('category', categoryEditScope, t, trimmed));
+    await createRule(ruleForEdit('category', categoryEdit.scope, t, trimmed));
     onTransactionsChange?.(await applyCategoryRules(transactions));
   }
 
-  function startEditTitle(t, i) {
-    setEditingTitleRow(i);
-    setTitleEditValue(t.title);
-    setTitleEditScope('always');
-  }
-
   async function saveTitleEdit(t) {
-    const trimmed = titleEditValue.trim();
-    setEditingTitleRow(null);
+    const trimmed = titleEdit.value.trim();
+    titleEdit.cancel();
     if (!trimmed || trimmed === t.title) return;
-    await createRule(ruleForEdit('title', titleEditScope, t, trimmed));
+    await createRule(ruleForEdit('title', titleEdit.scope, t, trimmed));
     onTransactionsChange?.(await applyCategoryRules(transactions));
   }
 
@@ -130,17 +115,17 @@ export default function TransactionsTable({ transactions, search = '', onTransac
       cellClassName: () => 'title-cell',
       cellProps: (t, i) => ({
         onKeyDown: (e) => {
-          if (editingTitleRow === i && e.key === 'Escape') setEditingTitleRow(null);
+          if (titleEdit.row === i && e.key === 'Escape') titleEdit.cancel();
         },
       }),
       render: (t, i) =>
-        editingTitleRow === i ? (
+        titleEdit.row === i ? (
           <span className="cell-editing">
             <input
               autoFocus
               autoComplete="off"
-              value={titleEditValue}
-              onChange={(e) => setTitleEditValue(e.target.value)}
+              value={titleEdit.value}
+              onChange={(e) => titleEdit.setValue(e.target.value)}
               onBlur={(e) => {
                 if (e.relatedTarget?.closest('.scope-toggle')) return;
                 saveTitleEdit(t);
@@ -149,10 +134,10 @@ export default function TransactionsTable({ transactions, search = '', onTransac
                 if (e.key === 'Enter') e.target.blur();
               }}
             />
-            <ScopeToggle scope={titleEditScope} onChange={setTitleEditScope} />
+            <ScopeToggle scope={titleEdit.scope} onChange={titleEdit.setScope} />
           </span>
         ) : (
-          <span onClick={() => startEditTitle(t, i)} title="Click to edit title">
+          <span onClick={() => titleEdit.start(i, t.title)} title="Click to edit title">
             {t.title}
           </span>
         ),
@@ -164,22 +149,22 @@ export default function TransactionsTable({ transactions, search = '', onTransac
       cellClassName: () => 'category-cell',
       cellProps: (t, i) => ({
         onKeyDown: (e) => {
-          if (editingRow === i && e.key === 'Escape') setEditingRow(null);
+          if (categoryEdit.row === i && e.key === 'Escape') categoryEdit.cancel();
         },
       }),
       render: (t, i) =>
-        editingRow === i ? (
+        categoryEdit.row === i ? (
           <span className="cell-editing">
             <CategorySelect
-              value={editValue}
+              value={categoryEdit.value}
               categories={existingCategories}
-              onChange={setEditValue}
+              onChange={categoryEdit.setValue}
               onCommit={(category) => saveEdit(t, category)}
             />
-            <ScopeToggle scope={categoryEditScope} onChange={setCategoryEditScope} />
+            <ScopeToggle scope={categoryEdit.scope} onChange={categoryEdit.setScope} />
           </span>
         ) : (
-          <span onClick={() => startEdit(t, i)} title="Click to assign a category">
+          <span onClick={() => categoryEdit.start(i, t.category)} title="Click to assign a category">
             {t.category}
           </span>
         ),

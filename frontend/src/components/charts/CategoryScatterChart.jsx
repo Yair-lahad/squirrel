@@ -26,6 +26,7 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
   const [titleOverrides, setTitleOverrides] = useState({});
   const [editing, setEditing] = useState(null); // { id, value, x, y }
   const [tooltip, setTooltip] = useState(null); // { x, y, title, amount, date }
+  const [axisLeft, setAxisLeft] = useState(0);
 
   const resolved = transactions.map((t) => (titleOverrides[t.id] ? { ...t, title: titleOverrides[t.id] } : t));
 
@@ -104,6 +105,11 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
     ],
   };
 
+  const measureAxis = {
+    id: 'measureAxis',
+    afterLayout: (chart) => setAxisLeft((prev) => (prev === chart.chartArea.left ? prev : chart.chartArea.left)),
+  };
+
   const options = {
     maintainAspectRatio: false,
     onClick: (evt, elements) => {
@@ -168,24 +174,20 @@ export default function CategoryScatterChart({ transactions, onTransactionsChang
           row made single-entity categories a bit shorter than others, which
           showed up as a layout shift when switching between them. */}
       <div className="chart-header">
-        <label className="entity-select-label">
+        <label className="entity-select-label" style={{ marginLeft: axisLeft }}>
           Highlight item
           <Select value={selectedTitle} onChange={(e) => setSelectedTitle(e.target.value)}>
             <option value={ALL}>All items</option>
             {entities.map((row) => (
-              // Native <option> text is drawn by the OS (esp. Windows), which ignores
-              // the `dir` attribute entirely - a leading LRM (U+200E) pins the bidi
-              // base direction to LTR so the ×N suffix always lands on the same side,
-              // regardless of whether the title itself is Hebrew or English.
               <option key={row.title} value={row.title}>
-                {`‎${row.title}${row.count > 1 ? ` ×${row.count}` : ''}`}
+                {row.title}{row.count > 1 ? ` ×${row.count}` : ''}
               </option>
             ))}
           </Select>
         </label>
       </div>
       <div className="chart-canvas">
-        <Scatter data={data} options={options} />
+        <Scatter data={data} options={options} plugins={[measureAxis]} />
         {editing && (
           <input
             autoFocus
