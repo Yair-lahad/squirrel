@@ -81,7 +81,7 @@ async function applyRulesEndpoint(req, res) {
   if (!Array.isArray(transactions)) {
     return res.status(400).json({ error: 'transactions array is required' });
   }
-  res.json(await ruleService.applyRulesTo(transactions));
+  res.json(await ruleService.applyRulesAndListCategories(transactions));
 }
 
 async function listCategories(req, res) {

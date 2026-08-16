@@ -77,38 +77,43 @@ function CategoryChip({ category, onRename, onDelete }) {
   );
 }
 
-export default function CategoryGrid({
-  categories,
-  onRename,
-  onDelete,
-  addingCategory,
-  newCategoryName,
-  onNewCategoryNameChange,
-  onAddClick,
-  onAddSubmit,
-  onAddCancel,
-}) {
+export default function CategoryGrid({ categories, onRename, onDelete, onCreate }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  function cancelAdd() {
+    setAdding(false);
+    setDraft('');
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    if (await onCreate(trimmed)) cancelAdd();
+  }
+
   return (
     <section className="category-grid-section">
       <div className="category-grid-header">
         <SectionHeading>Categories</SectionHeading>
-        {addingCategory ? (
-          <form onSubmit={onAddSubmit} className="category-add-form">
+        {adding ? (
+          <form onSubmit={handleSubmit} className="category-add-form">
             <input
               autoFocus
               autoComplete="off"
-              value={newCategoryName}
-              onChange={(e) => onNewCategoryNameChange(e.target.value)}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
               placeholder="New category name"
               onKeyDown={(e) => {
-                if (e.key === 'Escape') onAddCancel();
+                if (e.key === 'Escape') cancelAdd();
               }}
             />
             <Button type="submit" className="btn-pill">Add</Button>
-            <Button type="button" variant="ghost" className="btn-pill" onClick={onAddCancel}>Cancel</Button>
+            <Button type="button" variant="ghost" className="btn-pill" onClick={cancelAdd}>Cancel</Button>
           </form>
         ) : (
-          <Button type="button" className="btn-pill" onClick={onAddClick}>
+          <Button type="button" className="btn-pill" onClick={() => setAdding(true)}>
             + New category
           </Button>
         )}

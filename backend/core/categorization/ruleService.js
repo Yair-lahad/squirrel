@@ -113,6 +113,11 @@ async function applyRulesTo(transactions) {
   return result;
 }
 
+async function applyRulesAndListCategories(transactions) {
+  const result = await applyRulesTo(transactions);
+  return { transactions: result, categories: await repo.listCategories() };
+}
+
 async function listRules() {
   return repo.listRules();
 }
@@ -140,6 +145,7 @@ module.exports = {
   deleteRule,
   promoteRuleToAlways,
   applyRulesTo,
+  applyRulesAndListCategories,
   listCategories,
   createCategory,
   renameCategory,

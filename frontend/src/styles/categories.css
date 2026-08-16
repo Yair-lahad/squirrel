@@ -1,3 +1,7 @@
+.category-grid-loading {
+  min-height: 140px;
+}
+
 .category-select-creating {
   display: inline-flex;
   align-items: center;

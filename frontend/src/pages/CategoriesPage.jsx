@@ -3,7 +3,7 @@ import {
   fetchRules,
   createRule,
   deleteRule,
-  applyCategoryRules,
+  applyCategoryRulesAndCategories,
   fetchCategories,
   createCategory,
   renameCategory,
@@ -65,26 +65,31 @@ function RuleScopeCell({ rule }) {
 export default function CategoriesPage({ transactions, onLoaded }) {
   const [rules, setRules] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [categoriesReady, setCategoriesReady] = useState(false);
   const [form, setForm] = useState({ attribute: 'title', matchType: 'contains', pattern: '', value: '' });
   const [status, setStatus] = useState({ message: '', error: false });
   const [gridStatus, setGridStatus] = useState({ message: '', error: false });
   const [formKey, setFormKey] = useState(0);
-  const [addingCategory, setAddingCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
   const [ruleSearch, setRuleSearch] = useState('');
 
   useEffect(() => {
-    fetchRules().then(async (latestRules) => {
-      setRules(latestRules);
+    (async () => {
+      const rulesPromise = fetchRules();
       // Rules may have been created in a previous visit/session, after the
       // currently cached transactions were fetched - resync on every visit,
       // not just right after creating a rule, so stale categories don't linger.
-      // Applying rules also registers every category seen into the DB catalog,
-      // so fetch the catalog again afterward to pick up anything just added.
-      if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
-      setCategories(await fetchCategories());
-    });
-    if (!transactions.length) fetchCategories().then(setCategories);
+      let categoriesPromise = fetchCategories();
+      if (transactions.length) {
+        categoriesPromise = applyCategoryRulesAndCategories(transactions).then(({ transactions: applied, categories: cats }) => {
+          onLoaded?.(applied);
+          return cats;
+        });
+      }
+      const [latestRules, latestCategories] = await Promise.all([rulesPromise, categoriesPromise]);
+      setRules(latestRules);
+      setCategories(latestCategories);
+      setCategoriesReady(true);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -115,9 +120,17 @@ export default function CategoriesPage({ transactions, onLoaded }) {
   } = usePagination(filteredRules);
 
   async function refreshAfterCategoryChange() {
-    setRules(await fetchRules());
-    setCategories(await fetchCategories());
-    if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
+    const rulesPromise = fetchRules();
+    let categoriesPromise = fetchCategories();
+    if (transactions.length) {
+      categoriesPromise = applyCategoryRulesAndCategories(transactions).then(({ transactions: applied, categories: cats }) => {
+        onLoaded?.(applied);
+        return cats;
+      });
+    }
+    const [latestRules, latestCategories] = await Promise.all([rulesPromise, categoriesPromise]);
+    setRules(latestRules);
+    setCategories(latestCategories);
   }
 
   async function handleRenameCategory(id, name) {
@@ -154,22 +167,15 @@ export default function CategoriesPage({ transactions, onLoaded }) {
     }
   }
 
-  function cancelAddCategory() {
-    setAddingCategory(false);
-    setNewCategoryName('');
-  }
-
-  async function handleCreateCategory(e) {
-    e.preventDefault();
-    const trimmed = newCategoryName.trim();
-    if (!trimmed) return;
+  async function handleCreateCategory(name) {
     try {
-      await createCategory(trimmed);
-      cancelAddCategory();
+      await createCategory(name);
       setGridStatus({ message: '', error: false });
       await refreshAfterCategoryChange();
+      return true;
     } catch (err) {
       setGridStatus({ message: err.message, error: true });
+      return false;
     }
   }
 
@@ -198,9 +204,7 @@ export default function CategoriesPage({ transactions, onLoaded }) {
       setForm({ attribute: form.attribute, matchType: 'contains', pattern: '', value: '' });
       setFormKey((k) => k + 1);
       setStatus({ message: '', error: false });
-      setRules(await fetchRules());
-      setCategories(await fetchCategories());
-      if (transactions.length) onLoaded?.(await applyCategoryRules(transactions));
+      await refreshAfterCategoryChange();
     } catch (err) {
       setStatus({ message: err.message, error: true });
     }
@@ -213,17 +217,16 @@ export default function CategoriesPage({ transactions, onLoaded }) {
 
   return (
     <div className="categories-page">
-      <CategoryGrid
-        categories={categoryEntries}
-        onRename={handleRenameCategory}
-        onDelete={handleDeleteCategory}
-        addingCategory={addingCategory}
-        newCategoryName={newCategoryName}
-        onNewCategoryNameChange={setNewCategoryName}
-        onAddClick={() => setAddingCategory(true)}
-        onAddSubmit={handleCreateCategory}
-        onAddCancel={cancelAddCategory}
-      />
+      {categoriesReady ? (
+        <CategoryGrid
+          categories={categoryEntries}
+          onRename={handleRenameCategory}
+          onDelete={handleDeleteCategory}
+          onCreate={handleCreateCategory}
+        />
+      ) : (
+        <div className="category-grid-loading" />
+      )}
       {gridStatus.message && <p className={`status${gridStatus.error ? ' error' : ''}`}>{gridStatus.message}</p>}
 
       <section id="rule-form-panel" className="rule-form-panel">

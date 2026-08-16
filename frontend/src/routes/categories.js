@@ -31,6 +31,14 @@ export function deleteRule(id) {
 }
 
 export function applyCategoryRules(transactions) {
+  return applyCategoryRulesAndCategories(transactions).then((data) => data.transactions);
+}
+
+// Same endpoint as applyCategoryRules, but also returns the freshly synced
+// category catalog - applying rules already registers any new categories
+// server-side, so callers that need the catalog too can skip a second
+// fetchCategories() round trip.
+export function applyCategoryRulesAndCategories(transactions) {
   return fetch('/api/categories/apply', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

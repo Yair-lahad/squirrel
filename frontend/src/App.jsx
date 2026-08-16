@@ -62,14 +62,18 @@ export default function App() {
           )}
         </div>
       </header>
-      <Page
-        transactions={transactions}
-        uploads={uploads}
-        chartsTab={chartsTab}
-        onChartsTabChange={setChartsTab}
-        onLoaded={() => refresh()}
-        onChangeUpload={changeUpload}
-      />
+      {Object.entries(PAGES).map(([key, PageComponent]) => (
+        <div key={key} style={{ display: page === key ? 'contents' : 'none' }}>
+          <PageComponent
+            transactions={transactions}
+            uploads={uploads}
+            chartsTab={chartsTab}
+            onChartsTabChange={setChartsTab}
+            onLoaded={() => refresh()}
+            onChangeUpload={changeUpload}
+          />
+        </div>
+      ))}
     </>
   );
 }
